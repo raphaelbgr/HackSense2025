@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
 import multer from 'multer';
+import sharp from 'sharp';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -180,24 +181,14 @@ app.get('/api/admin/images', (req, res) => {
   }
 });
 
-// Upload pair of images
+// Upload pair of images with compression
 const uploadPair = multer({
-  storage: multer.diskStorage({
-    destination: function (req, file, cb) {
-      const type = file.fieldname === 'aiImage' ? 'ai' : 'human';
-      const dir = path.join(__dirname, 'public', 'images', type);
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      }
-      cb(null, dir);
-    },
-    filename: function (req, file, cb) {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-      cb(null, uniqueSuffix + path.extname(file.originalname));
-    }
-  }),
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB limit before compression
+  },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
@@ -209,7 +200,7 @@ const uploadPair = multer({
 app.post('/api/admin/upload/pair', uploadPair.fields([
   { name: 'aiImage', maxCount: 1 },
   { name: 'humanImage', maxCount: 1 }
-]), (req, res) => {
+]), async (req, res) => {
   try {
     if (!req.files.aiImage || !req.files.humanImage) {
       return res.status(400).json({ error: 'Ambas as imagens são necessárias' });
@@ -217,16 +208,40 @@ app.post('/api/admin/upload/pair', uploadPair.fields([
 
     const images = JSON.parse(fs.readFileSync('data/images.json', 'utf-8'));
 
+    // Compress and save AI image
+    const aiFilename = Date.now() + '-' + Math.round(Math.random() * 1E9) + '.jpg';
+    const aiDir = path.join(__dirname, 'public', 'images', 'ai');
+    if (!fs.existsSync(aiDir)) {
+      fs.mkdirSync(aiDir, { recursive: true });
+    }
+
+    await sharp(req.files.aiImage[0].buffer)
+      .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
+      .jpeg({ quality: 80, progressive: true })
+      .toFile(path.join(aiDir, aiFilename));
+
+    // Compress and save Human image
+    const humanFilename = Date.now() + '-' + Math.round(Math.random() * 1E9) + '.jpg';
+    const humanDir = path.join(__dirname, 'public', 'images', 'human');
+    if (!fs.existsSync(humanDir)) {
+      fs.mkdirSync(humanDir, { recursive: true });
+    }
+
+    await sharp(req.files.humanImage[0].buffer)
+      .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
+      .jpeg({ quality: 80, progressive: true })
+      .toFile(path.join(humanDir, humanFilename));
+
     const aiImage = {
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      file: `ai/${req.files.aiImage[0].filename}`,
+      file: `ai/${aiFilename}`,
       type: 'ai',
       pairId: Date.now()
     };
 
     const humanImage = {
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9) + 'h',
-      file: `human/${req.files.humanImage[0].filename}`,
+      file: `human/${humanFilename}`,
       type: 'human',
       pairId: Date.now()
     };
@@ -236,6 +251,7 @@ app.post('/api/admin/upload/pair', uploadPair.fields([
     fs.writeFileSync('data/images.json', JSON.stringify(images, null, 2));
     res.json({ success: true, aiImage, humanImage });
   } catch (error) {
+    console.error('Upload error:', error);
     res.status(500).json({ error: 'Erro ao fazer upload do par' });
   }
 });
