@@ -14,7 +14,8 @@
       "Bash(npx playwright install:*)",
       "Bash(git commit:*)",
       "Bash(npm install:*)",
-      "Bash(vercel:*)"
+      "Bash(vercel:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []

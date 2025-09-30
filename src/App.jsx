@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
+import { Analytics } from '@vercel/analytics/react';
 import './App.css';
 
 function App() {
@@ -328,6 +329,8 @@ function App() {
           <img src={fullscreenImage} alt="Imagem em tela cheia" />
         </div>
       )}
+
+      <Analytics />
     </div>
   );
 }
