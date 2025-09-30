@@ -64,7 +64,7 @@ app.post('/api/check', (req, res) => {
       return res.status(400).json({ error: 'Imagem inválida' });
     }
 
-    const correct = selected.type === 'ai';
+    const correct = selected.type === 'human';
     const points = correct ? 10 : 0;
 
     res.json({
@@ -117,6 +117,132 @@ app.post('/api/score', (req, res) => {
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Erro ao salvar pontuação' });
+  }
+});
+
+// === ADMIN API ROUTES ===
+
+// Get all pairs
+app.get('/api/admin/pairs', (req, res) => {
+  try {
+    const images = JSON.parse(fs.readFileSync('data/images.json', 'utf-8'));
+    const aiImages = images.filter(i => i.type === 'ai');
+    const humanImages = images.filter(i => i.type === 'human');
+
+    const pairs = [];
+    const minLength = Math.min(aiImages.length, humanImages.length);
+
+    for (let i = 0; i < minLength; i++) {
+      pairs.push({
+        ai: aiImages[i],
+        human: humanImages[i]
+      });
+    }
+
+    res.json(pairs);
+  } catch (error) {
+    res.json([]);
+  }
+});
+
+// Upload pair of images with compression
+const uploadPair = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB limit before compression
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Tipo de arquivo inválido'));
+    }
+  }
+});
+
+app.post('/api/admin/upload/pair', uploadPair.fields([
+  { name: 'aiImage', maxCount: 1 },
+  { name: 'humanImage', maxCount: 1 }
+]), async (req, res) => {
+  try {
+    if (!req.files.aiImage || !req.files.humanImage) {
+      return res.status(400).json({ error: 'Ambas as imagens são necessárias' });
+    }
+
+    const images = JSON.parse(fs.readFileSync('data/images.json', 'utf-8'));
+
+    // Compress and save AI image
+    const aiFilename = Date.now() + '-' + Math.round(Math.random() * 1E9) + '.jpg';
+    const aiDir = path.join(__dirname, 'public', 'images', 'ai');
+    if (!fs.existsSync(aiDir)) {
+      fs.mkdirSync(aiDir, { recursive: true });
+    }
+
+    await sharp(req.files.aiImage[0].buffer)
+      .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
+      .jpeg({ quality: 80, progressive: true })
+      .toFile(path.join(aiDir, aiFilename));
+
+    // Compress and save Human image
+    const humanFilename = Date.now() + '-' + Math.round(Math.random() * 1E9) + '.jpg';
+    const humanDir = path.join(__dirname, 'public', 'images', 'human');
+    if (!fs.existsSync(humanDir)) {
+      fs.mkdirSync(humanDir, { recursive: true });
+    }
+
+    await sharp(req.files.humanImage[0].buffer)
+      .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
+      .jpeg({ quality: 80, progressive: true })
+      .toFile(path.join(humanDir, humanFilename));
+
+    const aiImage = {
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      file: `ai/${aiFilename}`,
+      type: 'ai',
+      pairId: Date.now()
+    };
+
+    const humanImage = {
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9) + 'h',
+      file: `human/${humanFilename}`,
+      type: 'human',
+      pairId: Date.now()
+    };
+
+    images.push(aiImage, humanImage);
+
+    fs.writeFileSync('data/images.json', JSON.stringify(images, null, 2));
+    res.json({ success: true, aiImage, humanImage });
+  } catch (error) {
+    console.error('Upload error:', error);
+    res.status(500).json({ error: 'Erro ao fazer upload do par' });
+  }
+});
+
+// Delete image
+app.delete('/api/admin/image/:id', (req, res) => {
+  try {
+    const images = JSON.parse(fs.readFileSync('data/images.json', 'utf-8'));
+    const imageToDelete = images.find(img => img.id === req.params.id);
+
+    if (!imageToDelete) {
+      return res.status(404).json({ error: 'Imagem não encontrada' });
+    }
+
+    // Delete physical file
+    const filePath = path.join(__dirname, 'public', 'images', imageToDelete.file);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+
+    // Remove from JSON
+    const updatedImages = images.filter(img => img.id !== req.params.id);
+    fs.writeFileSync('data/images.json', JSON.stringify(updatedImages, null, 2));
+
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao deletar imagem' });
   }
 });
 
