@@ -268,7 +268,7 @@
       </div>
 
       <div style="text-align: center; margin-top: 30px;">
-        <button onclick="uploadPair()" style="font-size: 1.3rem; padding: 15px 40px;">
+        <button id="uploadBtn" onclick="uploadPair()" style="font-size: 1.3rem; padding: 15px 40px;">
           ✅ Adicionar Este Par
         </button>
         <div id="uploadSuccess" class="success-message">Par adicionado com sucesso!</div>
@@ -375,7 +375,16 @@
         return;
       }
 
+      const uploadBtn = document.getElementById('uploadBtn');
+      const originalText = uploadBtn.innerHTML;
+
       try {
+        // Show loading state
+        uploadBtn.disabled = true;
+        uploadBtn.innerHTML = '⏳ Enviando...';
+        uploadBtn.style.opacity = '0.6';
+        uploadBtn.style.cursor = 'not-allowed';
+
         // Compress images before upload
         const compressedAI = await compressImage(aiFile);
         const compressedHuman = await compressImage(humanFile);
@@ -406,6 +415,12 @@
       } catch (error) {
         console.error('Upload error:', error);
         alert('Erro ao fazer upload do par: ' + error.message);
+      } finally {
+        // Restore button state
+        uploadBtn.disabled = false;
+        uploadBtn.innerHTML = originalText;
+        uploadBtn.style.opacity = '1';
+        uploadBtn.style.cursor = 'pointer';
       }
     }
 
