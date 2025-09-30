@@ -3,7 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import multer from 'multer';
 import sharp from 'sharp';
-import { supabase, getImages, addImage, deleteImage, getRankings, addRanking, uploadImage, deleteStorageImage } from './supabase-client.js';
+import { getImages, addImage, deleteImage, getRankings, addRanking, uploadImageToStorage, deleteStorageImage } from './supabase-direct.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,6 +17,26 @@ app.use('/dist', express.static('dist'));
 // Serve frontend in production
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
+
+// Test endpoint
+app.get('/api/test', async (req, res) => {
+  try {
+    console.log('Testing Supabase connection...');
+    const images = await getImages();
+
+    res.json({
+      success: true,
+      message: 'Supabase connected!',
+      count: images.length
+    });
+  } catch (err) {
+    console.error('Test error:', err);
+    res.status(500).json({
+      success: false,
+      error: err.message
+    });
+  }
 });
 
 // 1. Get random pair of images
@@ -183,8 +203,11 @@ app.post('/api/admin/upload/pair', uploadPair.fields([
       .toBuffer();
 
     // Upload to Supabase Storage
-    const aiUpload = await uploadImage(aiCompressed, 'ai');
-    const humanUpload = await uploadImage(humanCompressed, 'human');
+    const aiFileName = `ai/${Date.now()}-${Math.round(Math.random() * 1E9)}.jpg`;
+    const humanFileName = `human/${Date.now()}-${Math.round(Math.random() * 1E9)}.jpg`;
+
+    const aiUpload = await uploadImageToStorage(aiCompressed, aiFileName);
+    const humanUpload = await uploadImageToStorage(humanCompressed, humanFileName);
 
     // Save metadata to database
     const aiImage = await addImage({
