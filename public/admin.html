@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - AI vs Human</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: white;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.5rem;
+      margin-bottom: 40px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    h2 {
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+      color: #ffd700;
+    }
+
+    .config-section {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    input[type="number"],
+    select {
+      width: 200px;
+      padding: 12px;
+      font-size: 1.1rem;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      margin-right: 15px;
+    }
+
+    input[type="number"]::placeholder,
+    select option {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    button {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 12px 24px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .upload-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+
+    .upload-box {
+      text-align: center;
+    }
+
+    .drop-zone {
+      border: 3px dashed rgba(255, 255, 255, 0.5);
+      border-radius: 15px;
+      padding: 40px;
+      margin-bottom: 20px;
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .drop-zone:hover,
+    .drop-zone.dragover {
+      border-color: #ffd700;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .drop-zone-icon {
+      font-size: 4rem;
+      margin-bottom: 15px;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .image-list {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .image-item {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .image-item img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    .image-item-info {
+      flex: 1;
+    }
+
+    .image-item-name {
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .delete-btn {
+      background: rgba(244, 67, 54, 0.8);
+      padding: 8px 16px;
+      font-size: 0.9rem;
+    }
+
+    .delete-btn:hover {
+      background: rgba(244, 67, 54, 1);
+    }
+
+    .success-message {
+      background: rgba(76, 175, 80, 0.8);
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 15px;
+      text-align: center;
+      font-weight: 600;
+      display: none;
+    }
+
+    .error-message {
+      background: rgba(244, 67, 54, 0.8);
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 15px;
+      text-align: center;
+      font-weight: 600;
+      display: none;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 20px;
+      color: white;
+      text-decoration: none;
+      font-size: 1.1rem;
+      padding: 10px 20px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      transition: all 0.3s ease;
+    }
+
+    .back-link:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: translateX(-5px);
+    }
+
+    @media (max-width: 768px) {
+      .upload-section {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="/" class="back-link">← Voltar ao Jogo</a>
+
+    <h1>🔧 Painel Administrativo</h1>
+
+    <div class="glass" style="text-align: center; padding: 20px;">
+      <h2>Total de Rodadas: <span id="totalRounds" style="color: #ffd700;">0</span></h2>
+      <p style="opacity: 0.9;">Cada par de imagens que você adicionar será uma rodada do jogo.</p>
+    </div>
+
+    <!-- Upload Section -->
+    <div class="glass">
+      <h2>📷 Adicionar Par de Imagens</h2>
+      <p style="margin-bottom: 20px; opacity: 0.9;">
+        Adicione 1 imagem IA e 1 imagem humana por vez. Cada par adicionado será uma rodada do jogo.
+      </p>
+
+      <div class="upload-section">
+        <!-- AI Images -->
+        <div class="upload-box">
+          <h3>🤖 Imagem IA</h3>
+          <div class="drop-zone" id="dropZoneAI" onclick="document.getElementById('fileInputAI').click()">
+            <div class="drop-zone-icon">📤</div>
+            <p>Selecione 1 imagem gerada por IA</p>
+            <small>(JPG, PNG, GIF)</small>
+          </div>
+          <input type="file" id="fileInputAI" accept="image/*" onchange="previewImage(this, 'ai')">
+          <div id="previewAI" style="margin-top: 10px; text-align: center;"></div>
+        </div>
+
+        <!-- Human Images -->
+        <div class="upload-box">
+          <h3>👤 Imagem Humana</h3>
+          <div class="drop-zone" id="dropZoneHuman" onclick="document.getElementById('fileInputHuman').click()">
+            <div class="drop-zone-icon">📤</div>
+            <p>Selecione 1 imagem feita por humano</p>
+            <small>(JPG, PNG, GIF)</small>
+          </div>
+          <input type="file" id="fileInputHuman" accept="image/*" onchange="previewImage(this, 'human')">
+          <div id="previewHuman" style="margin-top: 10px; text-align: center;"></div>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 30px;">
+        <button onclick="uploadPair()" style="font-size: 1.3rem; padding: 15px 40px;">
+          ✅ Adicionar Este Par
+        </button>
+        <div id="uploadSuccess" class="success-message">Par adicionado com sucesso!</div>
+        <div id="uploadError" class="error-message">Erro: Selecione ambas as imagens!</div>
+      </div>
+    </div>
+
+    <!-- Pairs List -->
+    <div class="glass">
+      <h2>🎮 Pares Cadastrados (Rodadas do Jogo)</h2>
+      <p style="margin-bottom: 20px; opacity: 0.9;">
+        Total de rodadas: <strong id="pairCount">0</strong>
+      </p>
+      <div id="pairsList" class="image-list"></div>
+    </div>
+  </div>
+
+  <script>
+    let aiFile = null;
+    let humanFile = null;
+
+    // Preview selected image
+    function previewImage(input, type) {
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const reader = new FileReader();
+
+        if (type === 'ai') {
+          aiFile = file;
+        } else {
+          humanFile = file;
+        }
+
+        reader.onload = function(e) {
+          const previewDiv = document.getElementById('preview' + (type === 'ai' ? 'AI' : 'Human'));
+          previewDiv.innerHTML = `
+            <img src="${e.target.result}" style="max-width: 200px; max-height: 200px; border-radius: 10px; border: 2px solid rgba(255,255,255,0.3);">
+            <p style="margin-top: 5px; font-size: 0.9rem;">${file.name}</p>
+          `;
+        };
+
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // Upload pair of images
+    async function uploadPair() {
+      if (!aiFile || !humanFile) {
+        showMessage('uploadError');
+        return;
+      }
+
+      try {
+        const formData = new FormData();
+        formData.append('aiImage', aiFile);
+        formData.append('humanImage', humanFile);
+
+        const res = await fetch('/api/admin/upload/pair', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (res.ok) {
+          showMessage('uploadSuccess');
+          // Reset
+          aiFile = null;
+          humanFile = null;
+          document.getElementById('fileInputAI').value = '';
+          document.getElementById('fileInputHuman').value = '';
+          document.getElementById('previewAI').innerHTML = '';
+          document.getElementById('previewHuman').innerHTML = '';
+          loadPairs();
+        } else {
+          alert('Erro ao fazer upload do par');
+        }
+      } catch (error) {
+        alert('Erro ao fazer upload do par');
+      }
+    }
+
+    // Load all pairs
+    async function loadPairs() {
+      try {
+        const res = await fetch('/api/admin/pairs');
+        const pairs = await res.json();
+
+        document.getElementById('pairCount').textContent = pairs.length;
+        document.getElementById('totalRounds').textContent = pairs.length;
+
+        const container = document.getElementById('pairsList');
+        container.innerHTML = '';
+
+        if (pairs.length === 0) {
+          container.innerHTML = '<p style="text-align: center; color: rgba(255,255,255,0.6);">Nenhum par cadastrado</p>';
+          return;
+        }
+
+        pairs.forEach((pair, index) => {
+          const div = document.createElement('div');
+          div.className = 'image-item';
+          div.innerHTML = `
+            <div style="display: flex; gap: 10px;">
+              <img src="/images/${pair.ai.file}" alt="AI" title="IA">
+              <img src="/images/${pair.human.file}" alt="Human" title="Humana">
+            </div>
+            <div class="image-item-info">
+              <div class="image-item-name">Par #${index + 1}</div>
+              <small>IA: ${pair.ai.id} | Humana: ${pair.human.id}</small>
+            </div>
+            <button class="delete-btn" onclick="deletePair('${pair.ai.id}', '${pair.human.id}')">Deletar Par</button>
+          `;
+          container.appendChild(div);
+        });
+      } catch (error) {
+        console.error('Error loading pairs:', error);
+      }
+    }
+
+    // Delete a pair
+    async function deletePair(aiId, humanId) {
+      if (!confirm('Tem certeza que deseja deletar este par?')) return;
+
+      try {
+        await fetch(`/api/admin/image/${aiId}`, { method: 'DELETE' });
+        await fetch(`/api/admin/image/${humanId}`, { method: 'DELETE' });
+        loadPairs();
+      } catch (error) {
+        alert('Erro ao deletar par');
+      }
+    }
+
+    // Show success/error message
+    function showMessage(id) {
+      const el = document.getElementById(id);
+      el.style.display = 'block';
+      setTimeout(() => {
+        el.style.display = 'none';
+      }, 3000);
+    }
+
+    // Drag and drop handlers
+    ['dropZoneAI', 'dropZoneHuman'].forEach(id => {
+      const zone = document.getElementById(id);
+      const type = id === 'dropZoneAI' ? 'ai' : 'human';
+      const input = document.getElementById('fileInput' + (type === 'ai' ? 'AI' : 'Human'));
+
+      zone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        zone.classList.add('dragover');
+      });
+
+      zone.addEventListener('dragleave', () => {
+        zone.classList.remove('dragover');
+      });
+
+      zone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        zone.classList.remove('dragover');
+        if (e.dataTransfer.files.length > 0) {
+          input.files = e.dataTransfer.files;
+          previewImage(input, type);
+        }
+      });
+    });
+
+    // Initialize
+    loadPairs();
+  </script>
+</body>
+</html>

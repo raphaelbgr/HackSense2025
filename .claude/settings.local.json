@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(claude mcp:*)",
+      "WebFetch(domain:www.hacktudo.com.br)",
+      "Bash(mkdir:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
