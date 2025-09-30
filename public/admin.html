@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin - AI vs Human</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700&display=swap');
+
     * {
       margin: 0;
       padding: 0;
@@ -12,10 +14,10 @@
     }
 
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: 'Rubik', sans-serif;
+      background: linear-gradient(135deg, #17112d 0%, #A598D7 50%, #ed752f 100%);
       min-height: 100vh;
-      color: white;
+      color: #efefef;
       padding: 20px;
     }
 
@@ -219,12 +221,16 @@
 </head>
 <body>
   <div class="container">
+    <div style="text-align: center; margin-bottom: 30px;">
+      <img src="/hacktudo-logo.svg" alt="HackTudo" style="max-width: 400px; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));">
+    </div>
+
     <a href="/" class="back-link">← Voltar ao Jogo</a>
 
     <h1>🔧 Painel Administrativo</h1>
 
     <div class="glass" style="text-align: center; padding: 20px;">
-      <h2>Total de Rodadas: <span id="totalRounds" style="color: #ffd700;">0</span></h2>
+      <h2>Total de Rodadas: <span id="totalRounds" style="color: #f9bb37;">0</span></h2>
       <p style="opacity: 0.9;">Cada par de imagens que você adicionar será uma rodada do jogo.</p>
     </div>
 

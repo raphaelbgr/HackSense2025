@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 150">
+  <style>
+    .logo-text { fill: #ed752f; font-family: 'Arial Black', Arial, sans-serif; font-weight: 900; }
+    .tagline { fill: #ed752f; font-family: Arial, sans-serif; font-size: 20px; }
+  </style>
+  <text x="50" y="80" class="logo-text" font-size="72">HACKTUDO</text>
+  <text x="50" y="110" class="tagline" font-size="18">FESTIVAL DE CULTURA DIGITAL</text>
+</svg>

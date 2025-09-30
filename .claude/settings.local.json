@@ -5,7 +5,10 @@
       "WebFetch(domain:www.hacktudo.com.br)",
       "Bash(mkdir:*)",
       "Bash(git init:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nInitial commit - AI vs Human Image Game\n\nGame built for HackTudo event - users identify human-generated images.\n\nFeatures:\n- React + Vite frontend with liquid glass design\n- Express.js backend on port 4111\n- Admin panel at /admin for image pair management\n- Pair-based image upload (1 AI + 1 Human = 1 round)\n- Dynamic game rounds based on uploaded pairs\n- Leaderboard with persistent rankings\n- Confetti celebrations on correct answers\n- Glassmorphism UI design\n\nTech stack:\n- React 18.3, Vite 5.4\n- Express 4.18, Multer for uploads\n- Canvas-confetti for animations\n- JSON file storage\n\n🤖 Generated with Claude Code\nhttps://claude.com/claude-code\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(npx playwright screenshot:*)",
+      "Bash(git remote add:*)"
     ],
     "deny": [],
     "ask": []

@@ -13,6 +13,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [maxQuestions, setMaxQuestions] = useState(10);
   const [gameOver, setGameOver] = useState(false);
+  const [fullscreenImage, setFullscreenImage] = useState(null);
 
   useEffect(() => {
     loadPairCount();
@@ -149,6 +150,40 @@ function App() {
 
   return (
     <div className="app">
+      {/* Logo */}
+      <div className="app-logo">
+        <h1 style={{
+          fontSize: '4rem',
+          fontWeight: '900',
+          color: '#ed752f',
+          textShadow: '3px 3px 6px rgba(0,0,0,0.3)',
+          marginBottom: '10px',
+          letterSpacing: '2px'
+        }}>
+          HACKTUDO
+        </h1>
+        <p style={{
+          fontSize: '1rem',
+          color: '#ed752f',
+          fontWeight: '500',
+          letterSpacing: '1px',
+          marginBottom: '30px'
+        }}>
+          FESTIVAL DE CULTURA DIGITAL
+        </p>
+        <h2 style={{
+          fontSize: '1.8rem',
+          fontWeight: '500',
+          color: '#efefef',
+          textAlign: 'center',
+          maxWidth: '800px',
+          margin: '0 auto',
+          lineHeight: '1.5'
+        }}>
+          Consegue diferenciar entre uma imagem gerada por IA e outra por humanos?
+        </h2>
+      </div>
+
       {/* Score Display */}
       <div className="score-display glass">
         <div className="score">Pontos: {score}</div>
@@ -174,17 +209,39 @@ function App() {
           <div className="image-pair">
             <div
               className={`image-card glass ${isAnimating ? 'disabled' : ''}`}
-              onClick={() => selectImage(pair.imageA.id)}
             >
-              <img src={pair.imageA.url} alt="Imagem A" />
+              <div className="image-wrapper">
+                <img src={pair.imageA.url} alt="Imagem A" onClick={() => selectImage(pair.imageA.id)} />
+                <button
+                  className="fullscreen-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setFullscreenImage(pair.imageA.url);
+                  }}
+                  title="Ver em tela cheia"
+                >
+                  🔍
+                </button>
+              </div>
               <p className="instruction">Clique se for Humana</p>
             </div>
 
             <div
               className={`image-card glass ${isAnimating ? 'disabled' : ''}`}
-              onClick={() => selectImage(pair.imageB.id)}
             >
-              <img src={pair.imageB.url} alt="Imagem B" />
+              <div className="image-wrapper">
+                <img src={pair.imageB.url} alt="Imagem B" onClick={() => selectImage(pair.imageB.id)} />
+                <button
+                  className="fullscreen-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setFullscreenImage(pair.imageB.url);
+                  }}
+                  title="Ver em tela cheia"
+                >
+                  🔍
+                </button>
+              </div>
               <p className="instruction">Clique se for Humana</p>
             </div>
           </div>
@@ -259,6 +316,16 @@ function App() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Fullscreen Image Modal */}
+      {fullscreenImage && (
+        <div className="fullscreen-modal" onClick={() => setFullscreenImage(null)}>
+          <button className="close-fullscreen" onClick={() => setFullscreenImage(null)}>
+            ✕
+          </button>
+          <img src={fullscreenImage} alt="Imagem em tela cheia" />
         </div>
       )}
     </div>

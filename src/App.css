@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700&display=swap');
+
 * {
   margin: 0;
   padding: 0;
@@ -5,10 +7,10 @@
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-family: 'Rubik', sans-serif;
+  background: linear-gradient(135deg, #17112d 0%, #A598D7 50%, #ed752f 100%);
   min-height: 100vh;
-  color: white;
+  color: #efefef;
   overflow-x: hidden;
 }
 
@@ -32,22 +34,34 @@ body {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
+/* Logo */
+.app-logo {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.app-logo img {
+  max-width: 400px;
+  height: auto;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
 /* Score Display */
 .score-display {
   display: flex;
   gap: 30px;
   padding: 20px 40px;
   font-size: 1.5rem;
-  font-weight: bold;
+  font-weight: 700;
   margin-top: 20px;
 }
 
 .score-display .score {
-  color: #ffd700;
+  color: #f9bb37;
 }
 
 .score-display .round {
-  color: #fff;
+  color: #efefef;
 }
 
 /* Game Container */
@@ -98,12 +112,43 @@ body {
   opacity: 0.6;
 }
 
+.image-wrapper {
+  position: relative;
+  width: 100%;
+}
+
 .image-card img {
   width: 100%;
   height: 400px;
   object-fit: cover;
   border-radius: 15px;
   border: 2px solid rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+}
+
+.fullscreen-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 50px;
+  height: 50px;
+  background: #f9bb37;
+  border: none;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.fullscreen-btn:hover {
+  transform: scale(1.1);
+  background: #ed752f;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
 .image-card .instruction {
@@ -111,6 +156,56 @@ body {
   font-weight: 600;
   text-align: center;
   color: rgba(255, 255, 255, 0.9);
+}
+
+/* Fullscreen Modal */
+.fullscreen-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+  cursor: pointer;
+  animation: fadeIn 0.3s ease;
+}
+
+.fullscreen-modal img {
+  max-width: 95%;
+  max-height: 95vh;
+  object-fit: contain;
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.close-fullscreen {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  background: #d94141;
+  border: none;
+  border-radius: 50%;
+  color: white;
+  font-size: 2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  z-index: 10000;
+}
+
+.close-fullscreen:hover {
+  transform: scale(1.1);
+  background: #ed752f;
 }
 
 /* Feedback Overlay */
@@ -129,15 +224,15 @@ body {
 }
 
 .feedback.success {
-  background: rgba(76, 175, 80, 0.95);
+  background: rgba(93, 191, 74, 0.95);
   color: white;
-  box-shadow: 0 0 50px rgba(76, 175, 80, 0.8);
+  box-shadow: 0 0 50px rgba(93, 191, 74, 0.8);
 }
 
 .feedback.error {
-  background: rgba(244, 67, 54, 0.95);
+  background: rgba(217, 65, 65, 0.95);
   color: white;
-  box-shadow: 0 0 50px rgba(244, 67, 54, 0.8);
+  box-shadow: 0 0 50px rgba(217, 65, 65, 0.8);
 }
 
 @keyframes feedbackPop {
@@ -205,7 +300,11 @@ body {
 .rank-score {
   font-size: 1.3rem;
   font-weight: bold;
-  color: #ffd700;
+  color: #17112d;
+  background: #f9bb37;
+  padding: 8px 20px;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(249, 187, 55, 0.3);
 }
 
 /* Game Over Screen */
@@ -228,7 +327,7 @@ body {
 
 .game-over .final-score {
   font-size: 2rem;
-  color: #ffd700;
+  color: #f9bb37;
   font-weight: bold;
   margin: 30px 0;
 }
