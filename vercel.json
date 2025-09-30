@@ -2,10 +2,6 @@
   "version": 2,
   "builds": [
     {
-      "src": "server.js",
-      "use": "@vercel/node"
-    },
-    {
       "src": "package.json",
       "use": "@vercel/static-build",
       "config": {
@@ -13,22 +9,31 @@
       }
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/admin",
-      "dest": "/admin.html"
+      "source": "/admin",
+      "destination": "/admin.html"
     },
     {
-      "src": "/api/(.*)",
-      "dest": "/server.js"
-    },
+      "source": "/api/:path*",
+      "destination": "/api"
+    }
+  ],
+  "functions": {
+    "api/index.js": {
+      "memory": 3008,
+      "maxDuration": 10
+    }
+  },
+  "headers": [
     {
-      "src": "/images/(.*)",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
     }
   ]
 }
