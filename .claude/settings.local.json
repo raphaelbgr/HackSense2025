@@ -8,7 +8,11 @@
       "Bash(git add:*)",
       "Bash(git commit -m \"$(cat <<''EOF''\nInitial commit - AI vs Human Image Game\n\nGame built for HackTudo event - users identify human-generated images.\n\nFeatures:\n- React + Vite frontend with liquid glass design\n- Express.js backend on port 4111\n- Admin panel at /admin for image pair management\n- Pair-based image upload (1 AI + 1 Human = 1 round)\n- Dynamic game rounds based on uploaded pairs\n- Leaderboard with persistent rankings\n- Confetti celebrations on correct answers\n- Glassmorphism UI design\n\nTech stack:\n- React 18.3, Vite 5.4\n- Express 4.18, Multer for uploads\n- Canvas-confetti for animations\n- JSON file storage\n\n🤖 Generated with Claude Code\nhttps://claude.com/claude-code\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(npx playwright screenshot:*)",
-      "Bash(git remote add:*)"
+      "Bash(git remote add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nAdd HackTudo branding and fullscreen image viewer\n\n- Applied official HackTudo visual identity (colors, typography)\n- Background gradient: dark purple → purple → orange\n- Added HACKTUDO logo and tagline to home page\n- Added game title: \"Consegue diferenciar entre uma imagem gerada por IA e outra por humanos?\"\n- Updated color palette throughout app:\n  * Yellow score bubbles (#f9bb37)\n  * Green success feedback (#5dbf4a)\n  * Red error feedback (#d94141)\n  * Rubik font family\n- Added fullscreen image viewer with 🔍 button\n- Improved ranking score visibility with bubble backgrounds\n- Updated admin page with HackTudo branding\n- Added brand PDF to docs folder\n\n🤖 Generated with Claude Code\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git push:*)",
+      "Bash(npx playwright install:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
