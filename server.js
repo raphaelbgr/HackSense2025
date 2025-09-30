@@ -118,8 +118,14 @@ app.post('/api/score', (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 4111;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-  console.log(`📁 Make sure to add images to public/images/ai and public/images/human`);
-});
+// For Vercel serverless function
+export default app;
+
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 4111;
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`📁 Make sure to add images to public/images/ai and public/images/human`);
+  });
+}
