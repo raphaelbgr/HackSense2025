@@ -10,15 +10,31 @@ const headers = {
 };
 
 export async function getImages() {
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/images?select=*&order=created_at.desc`, {
-    headers
-  });
+  console.log('Fetching from:', `${SUPABASE_URL}/rest/v1/images`);
 
-  if (!response.ok) {
-    throw new Error(`Supabase error: ${response.status}`);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+  try {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/images?select=*&order=created_at.desc`, {
+      headers,
+      signal: controller.signal
+    });
+
+    clearTimeout(timeout);
+
+    if (!response.ok) {
+      throw new Error(`Supabase error: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    clearTimeout(timeout);
+    if (error.name === 'AbortError') {
+      throw new Error('Supabase request timeout - network issue');
+    }
+    throw error;
   }
-
-  return await response.json();
 }
 
 export async function addImage(imageData) {
