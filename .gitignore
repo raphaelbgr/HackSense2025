@@ -45,3 +45,5 @@ public/images/human/*.jpeg
 # Data files (optional - remove if you want to track them)
 data/rankings.json
 data/config.json
+
+.vercel
