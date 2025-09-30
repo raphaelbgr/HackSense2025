@@ -118,7 +118,10 @@ app.post('/api/score', async (req, res) => {
 // Get all pairs
 app.get('/api/admin/pairs', async (req, res) => {
   try {
+    console.log('Fetching images from Supabase...');
     const images = await getImages();
+    console.log(`Got ${images.length} images`);
+
     const aiImages = images.filter(i => i.type === 'ai');
     const humanImages = images.filter(i => i.type === 'human');
 
@@ -132,10 +135,11 @@ app.get('/api/admin/pairs', async (req, res) => {
       });
     }
 
+    console.log(`Returning ${pairs.length} pairs`);
     res.json(pairs);
   } catch (error) {
     console.error('Error loading pairs:', error);
-    res.json([]);
+    res.status(500).json({ error: error.message });
   }
 });
 

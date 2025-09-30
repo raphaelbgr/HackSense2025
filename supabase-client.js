@@ -1,18 +1,33 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://afmsegsxgvsqwdctasyl.supabase.co';
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFmbXNlZ3N4Z3ZzcXdkY3Rhc3lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkyNzE0NDcsImV4cCI6MjA3NDg0NzQ0N30.kBSJi74iiKWZIhDOa1nMTYyKqNJOzykMu9dE8GXNVY0';
+// Hardcode for now to ensure it works
+const supabaseUrl = 'https://afmsegsxgvsqwdctasyl.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFmbXNlZ3N4Z3ZzcXdkY3Rhc3lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkyNzE0NDcsImV4cCI6MjA3NDg0NzQ0N30.kBSJi74iiKWZIhDOa1nMTYyKqNJOzykMu9dE8GXNVY0';
+
+console.log('Initializing Supabase client with URL:', supabaseUrl);
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Helper functions for data storage
 export async function getImages() {
-  const { data, error } = await supabase
-    .from('images')
-    .select('*')
-    .order('created_at', { ascending: false });
+  try {
+    console.log('Querying images table...');
+    const { data, error } = await supabase
+      .from('images')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-  return data || [];
+    if (error) {
+      console.error('Supabase error:', error);
+      throw error;
+    }
+
+    console.log('Got data:', data ? data.length : 0, 'rows');
+    return data || [];
+  } catch (err) {
+    console.error('getImages error:', err);
+    return [];
+  }
 }
 
 export async function addImage(imageData) {
