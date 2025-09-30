@@ -1,12 +1,20 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Hardcode for now to ensure it works
 const supabaseUrl = 'https://afmsegsxgvsqwdctasyl.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFmbXNlZ3N4Z3ZzcXdkY3Rhc3lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkyNzE0NDcsImV4cCI6MjA3NDg0NzQ0N30.kBSJi74iiKWZIhDOa1nMTYyKqNJOzykMu9dE8GXNVY0';
 
-console.log('Initializing Supabase client with URL:', supabaseUrl);
-
-export const supabase = createClient(supabaseUrl, supabaseKey);
+// Create Supabase client with proper config for serverless
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false,
+  },
+  global: {
+    headers: {
+      'x-client-info': '@supabase/supabase-js/2.58.0'
+    }
+  }
+});
 
 // Helper functions for data storage
 export async function getImages() {
