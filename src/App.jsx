@@ -126,17 +126,31 @@ function App() {
     }
 
     try {
-      await fetch('/api/score', {
+      console.log('Submitting score:', { name: name.trim(), score });
+      const res = await fetch('/api/score', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: name.trim(), score })
       });
 
+      console.log('Score response:', res.status);
+
+      if (!res.ok) {
+        const error = await res.json();
+        console.error('Score error:', error);
+        alert('Erro ao salvar pontuação: ' + (error.error || 'Erro desconhecido'));
+        return;
+      }
+
+      console.log('Loading rankings...');
       await loadRankings();
+      console.log('Rankings loaded');
+
       setShowNameModal(false);
       resetGame();
     } catch (error) {
-      alert('Erro ao salvar pontuação');
+      console.error('Submit score error:', error);
+      alert('Erro ao salvar pontuação: ' + error.message);
     }
   }
 
