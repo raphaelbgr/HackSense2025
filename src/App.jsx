@@ -37,7 +37,7 @@ function App() {
   async function loadPair() {
     try {
       setLoading(true);
-      const usedParam = usedPairIds.length > 0 ? `?used=${usedPairIds.join(',)}` : '';
+      const usedParam = usedPairIds.length > 0 ? `?used=${usedPairIds.join(',')}` : '';
       const res = await fetch(`/api/pair${usedParam}`);
       const data = await res.json();
 
