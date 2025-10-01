@@ -15,6 +15,7 @@ function App() {
   const [maxQuestions, setMaxQuestions] = useState(10);
   const [gameOver, setGameOver] = useState(false);
   const [fullscreenImage, setFullscreenImage] = useState(null);
+  const [usedPairIds, setUsedPairIds] = useState([]);
 
   useEffect(() => {
     loadPairCount();
@@ -36,11 +37,16 @@ function App() {
   async function loadPair() {
     try {
       setLoading(true);
-      const res = await fetch('/api/pair');
+      const usedParam = usedPairIds.length > 0 ? `?used=${usedPairIds.join(',)}` : '';
+      const res = await fetch(`/api/pair${usedParam}`);
       const data = await res.json();
 
       if (res.ok) {
         setPair(data);
+        // Track this pair ID
+        if (data.pairId && !usedPairIds.includes(data.pairId)) {
+          setUsedPairIds([...usedPairIds, data.pairId]);
+        }
       } else {
         alert(data.error || 'Erro ao carregar imagens');
       }
@@ -159,6 +165,7 @@ function App() {
     setRound(1);
     setShowNameModal(false);
     setGameOver(false);
+    setUsedPairIds([]); // Clear used pairs
     loadPairCount();
     loadPair();
   }

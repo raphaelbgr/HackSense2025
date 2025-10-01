@@ -6,6 +6,10 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Get used pair IDs from query param
+    const usedPairIdsParam = req.query.used || '';
+    const usedPairIds = usedPairIdsParam ? usedPairIdsParam.split(',').map(Number) : [];
+
     const images = await getImages();
 
     // Group images by pair_id
@@ -18,20 +22,28 @@ export default async function handler(req, res) {
     });
 
     // Get complete pairs (must have both AI and human)
-    const completePairs = Object.values(pairGroups).filter(group => {
+    let completePairs = Object.values(pairGroups).filter(group => {
       return group.length === 2 &&
              group.some(i => i.type === 'ai') &&
              group.some(i => i.type === 'human');
     });
 
-    if (completePairs.length === 0) {
+    // Filter out already used pairs
+    const availablePairs = completePairs.filter(pair => {
+      return !usedPairIds.includes(pair[0].pair_id);
+    });
+
+    // If no available pairs, reset and use all pairs
+    const pairsToUse = availablePairs.length > 0 ? availablePairs : completePairs;
+
+    if (pairsToUse.length === 0) {
       return res.status(503).json({
         error: 'Nenhum par completo disponível. Adicione pelo menos 1 par (1 IA + 1 Humana).'
       });
     }
 
     // Select a random pair
-    const selectedPair = completePairs[Math.floor(Math.random() * completePairs.length)];
+    const selectedPair = pairsToUse[Math.floor(Math.random() * pairsToUse.length)];
 
     // Shuffle the order (random position)
     const shuffled = [...selectedPair].sort(() => Math.random() - 0.5);
@@ -44,7 +56,8 @@ export default async function handler(req, res) {
       imageB: {
         id: shuffled[1].id,
         url: shuffled[1].url
-      }
+      },
+      pairId: shuffled[0].pair_id
     });
   } catch (error) {
     console.error('Error loading pair:', error);
