@@ -7,27 +7,43 @@ export default async function handler(req, res) {
 
   try {
     const images = await getImages();
-    const ai = images.filter(i => i.type === 'ai');
-    const human = images.filter(i => i.type === 'human');
 
-    if (ai.length < 1 || human.length < 1) {
+    // Group images by pair_id
+    const pairGroups = {};
+    images.forEach(img => {
+      if (!pairGroups[img.pair_id]) {
+        pairGroups[img.pair_id] = [];
+      }
+      pairGroups[img.pair_id].push(img);
+    });
+
+    // Get complete pairs (must have both AI and human)
+    const completePairs = Object.values(pairGroups).filter(group => {
+      return group.length === 2 &&
+             group.some(i => i.type === 'ai') &&
+             group.some(i => i.type === 'human');
+    });
+
+    if (completePairs.length === 0) {
       return res.status(503).json({
-        error: 'Imagens insuficientes. Adicione pelo menos 1 IA e 1 Humana.'
+        error: 'Nenhum par completo disponível. Adicione pelo menos 1 par (1 IA + 1 Humana).'
       });
     }
 
-    const randomAI = ai[Math.floor(Math.random() * ai.length)];
-    const randomHuman = human[Math.floor(Math.random() * human.length)];
-    const pair = [randomAI, randomHuman].sort(() => Math.random() - 0.5);
+    // Select a random pair
+    const selectedPair = completePairs[Math.floor(Math.random() * completePairs.length)];
+
+    // Shuffle the order (random position)
+    const shuffled = [...selectedPair].sort(() => Math.random() - 0.5);
 
     res.json({
       imageA: {
-        id: pair[0].id,
-        url: pair[0].url
+        id: shuffled[0].id,
+        url: shuffled[0].url
       },
       imageB: {
-        id: pair[1].id,
-        url: pair[1].url
+        id: shuffled[1].id,
+        url: shuffled[1].url
       }
     });
   } catch (error) {
