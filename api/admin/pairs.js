@@ -7,18 +7,26 @@ export default async function handler(req, res) {
 
   try {
     const images = await getImages();
-    const aiImages = images.filter(i => i.type === 'ai');
-    const humanImages = images.filter(i => i.type === 'human');
 
+    // Group images by pair_id
+    const pairGroups = {};
+    images.forEach(img => {
+      if (!pairGroups[img.pair_id]) {
+        pairGroups[img.pair_id] = [];
+      }
+      pairGroups[img.pair_id].push(img);
+    });
+
+    // Build pairs array with complete pairs only
     const pairs = [];
-    const minLength = Math.min(aiImages.length, humanImages.length);
+    Object.values(pairGroups).forEach(group => {
+      const ai = group.find(i => i.type === 'ai');
+      const human = group.find(i => i.type === 'human');
 
-    for (let i = 0; i < minLength; i++) {
-      pairs.push({
-        ai: aiImages[i],
-        human: humanImages[i]
-      });
-    }
+      if (ai && human) {
+        pairs.push({ ai, human });
+      }
+    });
 
     res.json(pairs);
   } catch (error) {

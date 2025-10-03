@@ -1,10 +1,16 @@
 import express from 'express';
-import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
-import multer from 'multer';
-import sharp from 'sharp';
+
+// Import API handlers (same as production)
+import pairHandler from './api/pair.js';
+import checkHandler from './api/check.js';
+import rankingsHandler from './api/rankings.js';
+import scoreHandler from './api/score.js';
+import adminPairsHandler from './api/admin/pairs.js';
+import adminUploadPairHandler from './api/admin/upload/pair.js';
+import adminImageDeleteHandler from './api/admin/image/[id].js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,304 +18,65 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 app.use(express.json());
-app.use('/images', express.static('public/images'));
 
-// Multer configuration for file uploads
-const createStorage = (type) => multer.diskStorage({
-  destination: function (req, file, cb) {
-    const dir = path.join(__dirname, 'public', 'images', type);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    cb(null, dir);
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
-const createUpload = (type) => multer({
-  storage: createStorage(type),
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-    if (allowedTypes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Tipo de arquivo inválido'));
-    }
-  }
-});
-
-// API Routes
-// 1. Get random pair of images
-app.get('/api/pair', (req, res) => {
+// Helper to wrap Vercel API handlers for Express
+const wrapHandler = (handler) => async (req, res) => {
   try {
-    const images = JSON.parse(fs.readFileSync('data/images.json', 'utf-8'));
-    const ai = images.filter(i => i.type === 'ai');
-    const human = images.filter(i => i.type === 'human');
-
-    if (ai.length < 1 || human.length < 1) {
-      return res.status(503).json({
-        error: 'Imagens insuficientes. Adicione pelo menos 1 IA e 1 Humana.'
-      });
-    }
-
-    // Random selection
-    const randomAI = ai[Math.floor(Math.random() * ai.length)];
-    const randomHuman = human[Math.floor(Math.random() * human.length)];
-
-    // Shuffle positions
-    const pair = [randomAI, randomHuman].sort(() => Math.random() - 0.5);
-
-    res.json({
-      imageA: {
-        id: pair[0].id,
-        url: `/images/${pair[0].file}`
-      },
-      imageB: {
-        id: pair[1].id,
-        url: `/images/${pair[1].file}`
-      }
-    });
+    await handler(req, res);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao carregar imagens' });
-  }
-});
-
-// 2. Check if answer is correct
-app.post('/api/check', (req, res) => {
-  try {
-    const images = JSON.parse(fs.readFileSync('data/images.json', 'utf-8'));
-    const selected = images.find(i => i.id === req.body.selectedId);
-
-    if (!selected) {
-      return res.status(400).json({ error: 'Imagem inválida' });
-    }
-
-    const correct = selected.type === 'human';
-    const points = correct ? 10 : 0;
-
-    res.json({
-      correct,
-      points,
-      type: selected.type
-    });
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao verificar resposta' });
-  }
-});
-
-// 3. Get leaderboard (top 10)
-app.get('/api/rankings', (req, res) => {
-  try {
-    const rankings = JSON.parse(fs.readFileSync('data/rankings.json', 'utf-8'));
-    const top10 = rankings
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 10);
-
-    res.json(top10);
-  } catch (error) {
-    res.json([]);
-  }
-});
-
-// 4. Save score to leaderboard
-app.post('/api/score', (req, res) => {
-  try {
-    const { name, score } = req.body;
-
-    if (!name || typeof score !== 'number') {
-      return res.status(400).json({ error: 'Nome e pontuação são obrigatórios' });
-    }
-
-    const rankings = JSON.parse(fs.readFileSync('data/rankings.json', 'utf-8'));
-
-    rankings.push({
-      name: name.trim().substring(0, 50),
-      score,
-      date: new Date().toISOString().split('T')[0]
-    });
-
-    // Sort and keep top 50
-    rankings.sort((a, b) => b.score - a.score);
-    const top50 = rankings.slice(0, 50);
-
-    fs.writeFileSync('data/rankings.json', JSON.stringify(top50, null, 2));
-
-    res.json({ success: true });
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao salvar pontuação' });
-  }
-});
-
-// === ADMIN API ROUTES ===
-
-// Get game configuration
-app.get('/api/admin/config', (req, res) => {
-  try {
-    const configPath = 'data/config.json';
-    if (!fs.existsSync(configPath)) {
-      fs.writeFileSync(configPath, JSON.stringify({ maxQuestions: 10 }, null, 2));
-    }
-    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-    res.json(config);
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao carregar configuração' });
-  }
-});
-
-// Save game configuration
-app.post('/api/admin/config', (req, res) => {
-  try {
-    const { maxQuestions } = req.body;
-    const configPath = 'data/config.json';
-    fs.writeFileSync(configPath, JSON.stringify({ maxQuestions }, null, 2));
-    res.json({ success: true });
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao salvar configuração' });
-  }
-});
-
-// Get all images
-app.get('/api/admin/images', (req, res) => {
-  try {
-    const images = JSON.parse(fs.readFileSync('data/images.json', 'utf-8'));
-    res.json(images);
-  } catch (error) {
-    res.json([]);
-  }
-});
-
-// Upload pair of images with compression
-const uploadPair = multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB limit before compression
-  },
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    if (allowedTypes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Tipo de arquivo inválido'));
+    console.error('API Error:', error);
+    if (!res.headersSent) {
+      res.status(500).json({ error: error.message });
     }
   }
-});
+};
 
-app.post('/api/admin/upload/pair', uploadPair.fields([
-  { name: 'aiImage', maxCount: 1 },
-  { name: 'humanImage', maxCount: 1 }
-]), async (req, res) => {
-  try {
-    if (!req.files.aiImage || !req.files.humanImage) {
-      return res.status(400).json({ error: 'Ambas as imagens são necessárias' });
-    }
-
-    const images = JSON.parse(fs.readFileSync('data/images.json', 'utf-8'));
-
-    // Compress and save AI image
-    const aiFilename = Date.now() + '-' + Math.round(Math.random() * 1E9) + '.jpg';
-    const aiDir = path.join(__dirname, 'public', 'images', 'ai');
-    if (!fs.existsSync(aiDir)) {
-      fs.mkdirSync(aiDir, { recursive: true });
-    }
-
-    await sharp(req.files.aiImage[0].buffer)
-      .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
-      .jpeg({ quality: 80, progressive: true })
-      .toFile(path.join(aiDir, aiFilename));
-
-    // Compress and save Human image
-    const humanFilename = Date.now() + '-' + Math.round(Math.random() * 1E9) + '.jpg';
-    const humanDir = path.join(__dirname, 'public', 'images', 'human');
-    if (!fs.existsSync(humanDir)) {
-      fs.mkdirSync(humanDir, { recursive: true });
-    }
-
-    await sharp(req.files.humanImage[0].buffer)
-      .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
-      .jpeg({ quality: 80, progressive: true })
-      .toFile(path.join(humanDir, humanFilename));
-
-    const aiImage = {
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      file: `ai/${aiFilename}`,
-      type: 'ai',
-      pairId: Date.now()
-    };
-
-    const humanImage = {
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9) + 'h',
-      file: `human/${humanFilename}`,
-      type: 'human',
-      pairId: Date.now()
-    };
-
-    images.push(aiImage, humanImage);
-
-    fs.writeFileSync('data/images.json', JSON.stringify(images, null, 2));
-    res.json({ success: true, aiImage, humanImage });
-  } catch (error) {
-    console.error('Upload error:', error);
-    res.status(500).json({ error: 'Erro ao fazer upload do par' });
-  }
-});
-
-// Get all pairs
-app.get('/api/admin/pairs', (req, res) => {
-  try {
-    const images = JSON.parse(fs.readFileSync('data/images.json', 'utf-8'));
-    const aiImages = images.filter(i => i.type === 'ai');
-    const humanImages = images.filter(i => i.type === 'human');
-
-    // Match by pairId or just pair them by index
-    const pairs = [];
-    const minLength = Math.min(aiImages.length, humanImages.length);
-
-    for (let i = 0; i < minLength; i++) {
-      pairs.push({
-        ai: aiImages[i],
-        human: humanImages[i]
-      });
-    }
-
-    res.json(pairs);
-  } catch (error) {
-    res.json([]);
-  }
-});
-
-// Delete image
+// API Routes - use production handlers
+app.get('/api/pair', wrapHandler(pairHandler));
+app.post('/api/check', wrapHandler(checkHandler));
+app.get('/api/rankings', wrapHandler(rankingsHandler));
+app.post('/api/score', wrapHandler(scoreHandler));
+app.get('/api/admin/pairs', wrapHandler(adminPairsHandler));
+app.post('/api/admin/upload/pair', wrapHandler(adminUploadPairHandler));
 app.delete('/api/admin/image/:id', (req, res) => {
-  try {
-    const images = JSON.parse(fs.readFileSync('data/images.json', 'utf-8'));
-    const imageToDelete = images.find(img => img.id === req.params.id);
-
-    if (!imageToDelete) {
-      return res.status(404).json({ error: 'Imagem não encontrada' });
-    }
-
-    // Delete physical file
-    const filePath = path.join(__dirname, 'public', 'images', imageToDelete.file);
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
-
-    // Remove from JSON
-    const updatedImages = images.filter(img => img.id !== req.params.id);
-    fs.writeFileSync('data/images.json', JSON.stringify(updatedImages, null, 2));
-
-    res.json({ success: true });
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao deletar imagem' });
-  }
+  // Map Express params to Vercel format
+  req.query = { ...req.query, id: req.params.id };
+  wrapHandler(adminImageDeleteHandler)(req, res);
 });
 
-// Admin route
+// Basic auth middleware for admin
+const basicAuth = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Basic ')) {
+    res.setHeader('WWW-Authenticate', 'Basic realm="Admin Area"');
+    return res.status(401).send('Authentication required');
+  }
+
+  const base64Credentials = authHeader.split(' ')[1];
+  const credentials = Buffer.from(base64Credentials, 'base64').toString('utf-8');
+  const [username, password] = credentials.split(':');
+
+  if (username === 'hacksense2025' && password === 'HackSense2025!') {
+    next();
+  } else {
+    res.setHeader('WWW-Authenticate', 'Basic realm="Admin Area"');
+    return res.status(401).send('Invalid credentials');
+  }
+};
+
+// Admin login page (no auth required)
+app.get('/admin-login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin-login.html'));
+});
+
+// Admin route - always serve, let client-side handle auth check
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
+
+// Protect admin API routes
+app.use('/api/admin', basicAuth);
 
 // Create Vite server in middleware mode
 const vite = await createViteServer({

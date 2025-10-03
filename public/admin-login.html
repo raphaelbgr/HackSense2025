@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Admin</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Rubik', sans-serif;
+      background: linear-gradient(135deg, #17112d 0%, #A598D7 50%, #ed752f 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #efefef;
+    }
+
+    .login-container {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      padding: 40px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      color: #ed752f;
+    }
+
+    p {
+      margin-bottom: 30px;
+      opacity: 0.9;
+    }
+
+    input {
+      width: 100%;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      font-size: 1rem;
+      font-family: 'Rubik', sans-serif;
+    }
+
+    input::placeholder {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #ed752f;
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Rubik', sans-serif;
+    }
+
+    button:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .error {
+      background: rgba(244, 67, 54, 0.8);
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      display: none;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      color: white;
+      text-decoration: none;
+      opacity: 0.8;
+      transition: opacity 0.3s ease;
+    }
+
+    .back-link:hover {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h1>🔒 Admin Login</h1>
+    <p>Digite suas credenciais para acessar o painel</p>
+
+    <div id="error" class="error"></div>
+
+    <form id="loginForm">
+      <input
+        type="text"
+        id="username"
+        placeholder="Usuário"
+        autocomplete="username"
+        required
+      >
+      <input
+        type="password"
+        id="password"
+        placeholder="Senha"
+        autocomplete="current-password"
+        required
+      >
+      <button type="submit" id="loginBtn">Entrar</button>
+    </form>
+
+    <a href="/" class="back-link">← Voltar ao jogo</a>
+  </div>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const loginBtn = document.getElementById('loginBtn');
+    const errorDiv = document.getElementById('error');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value;
+
+      if (!username || !password) {
+        showError('Por favor, preencha todos os campos');
+        return;
+      }
+
+      loginBtn.disabled = true;
+      loginBtn.textContent = 'Verificando...';
+      errorDiv.style.display = 'none';
+
+      // Create basic auth credentials
+      const credentials = btoa(`${username}:${password}`);
+
+      // Store credentials in sessionStorage
+      sessionStorage.setItem('adminAuth', credentials);
+
+      // Verify credentials by calling an admin API
+      try {
+        const response = await fetch('/api/admin/pairs', {
+          headers: {
+            'Authorization': `Basic ${credentials}`
+          }
+        });
+
+        if (response.ok || response.status === 200) {
+          // Success - force redirect to /admin
+          window.location.replace('/admin');
+        } else if (response.status === 401) {
+          sessionStorage.removeItem('adminAuth');
+          showError('Credenciais inválidas');
+          loginBtn.disabled = false;
+          loginBtn.textContent = 'Entrar';
+        } else {
+          sessionStorage.removeItem('adminAuth');
+          showError('Erro na autenticação');
+          loginBtn.disabled = false;
+          loginBtn.textContent = 'Entrar';
+        }
+      } catch (error) {
+        sessionStorage.removeItem('adminAuth');
+        showError('Erro ao conectar com servidor');
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Entrar';
+      }
+    });
+
+    function showError(message) {
+      errorDiv.textContent = message;
+      errorDiv.style.display = 'block';
+    }
+
+    // Focus username on load
+    usernameInput.focus();
+  </script>
+</body>
+</html>

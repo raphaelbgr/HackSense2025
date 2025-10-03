@@ -63,8 +63,9 @@ export async function deleteImage(id) {
   }
 }
 
-export async function getRankings() {
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/rankings?select=*&order=score.desc&limit=50`, {
+export async function getRankings(limit = null) {
+  const limitParam = limit ? `&limit=${limit}` : '';
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/rankings?select=*&order=score.desc${limitParam}`, {
     headers
   });
 

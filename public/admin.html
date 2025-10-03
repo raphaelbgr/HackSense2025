@@ -154,6 +154,35 @@
       height: 80px;
       object-fit: cover;
       border-radius: 8px;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .image-item img:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 16px rgba(255, 255, 255, 0.3);
+    }
+
+    .image-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+
+    .image-wrapper::after {
+      content: '🔍';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 2rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+      text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+    }
+
+    .image-wrapper:hover::after {
+      opacity: 1;
     }
 
     .image-item-info {
@@ -225,7 +254,12 @@
       <img src="/hacktudo-logo.svg" alt="HackTudo" style="max-width: 400px; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));">
     </div>
 
-    <a href="/" class="back-link">← Voltar ao Jogo</a>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <a href="/" class="back-link">← Voltar ao Jogo</a>
+      <button onclick="logout()" class="back-link" style="background: rgba(244, 67, 54, 0.3); border: 1px solid rgba(244, 67, 54, 0.5); padding: 10px 20px; cursor: pointer;">
+        🚪 Sair
+      </button>
+    </div>
 
     <h1>🔧 Painel Administrativo</h1>
 
@@ -284,9 +318,41 @@
       </p>
       <div id="pairsList" class="image-list"></div>
     </div>
+
+    <!-- Rankings Export -->
+    <div class="glass">
+      <h2>📊 Exportar Rankings</h2>
+      <p style="margin-bottom: 20px; opacity: 0.9;">
+        Baixe a lista de participantes com nome e e-mail.
+      </p>
+      <div style="text-align: center;">
+        <button onclick="exportRankings()" style="font-size: 1.2rem; padding: 15px 40px;">
+          💾 Baixar Rankings (CSV)
+        </button>
+      </div>
+    </div>
   </div>
 
   <script>
+    // Check if logged in, redirect to login if not
+    const authCredentials = sessionStorage.getItem('adminAuth');
+    if (!authCredentials) {
+      window.location.replace('/admin-login');
+    }
+
+    // Intercept all fetch calls to add auth header
+    const originalFetch = window.fetch;
+    window.fetch = function(url, options = {}) {
+      const auth = sessionStorage.getItem('adminAuth');
+      if (auth && (url.includes('/api/admin') || url.includes('/api/rankings'))) {
+        options.headers = {
+          ...options.headers,
+          'Authorization': `Basic ${auth}`
+        };
+      }
+      return originalFetch(url, options);
+    };
+
     let aiFile = null;
     let humanFile = null;
 
@@ -446,8 +512,12 @@
           div.className = 'image-item';
           div.innerHTML = `
             <div style="display: flex; gap: 10px;">
-              <img src="${pair.ai.url}" alt="AI" title="IA">
-              <img src="${pair.human.url}" alt="Human" title="Humana">
+              <div class="image-wrapper">
+                <img src="${pair.ai.url}" alt="AI" title="IA (clique para ampliar)" style="cursor: pointer;" onclick="openFullscreen('${pair.ai.url}')">
+              </div>
+              <div class="image-wrapper">
+                <img src="${pair.human.url}" alt="Human" title="Humana (clique para ampliar)" style="cursor: pointer;" onclick="openFullscreen('${pair.human.url}')">
+              </div>
             </div>
             <div class="image-item-info">
               <div class="image-item-name">Par #${index + 1}</div>
@@ -508,6 +578,120 @@
         }
       });
     });
+
+    // Open fullscreen image viewer
+    function openFullscreen(imageUrl) {
+      const modal = document.createElement('div');
+      modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.95);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        cursor: pointer;
+      `;
+
+      const img = document.createElement('img');
+      img.src = imageUrl;
+      img.style.cssText = `
+        max-width: 95vw;
+        max-height: 95vh;
+        object-fit: contain;
+        border-radius: 10px;
+        box-shadow: 0 0 50px rgba(255, 255, 255, 0.3);
+      `;
+
+      const closeBtn = document.createElement('button');
+      closeBtn.innerHTML = '✕';
+      closeBtn.style.cssText = `
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: 3rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        line-height: 1;
+        padding: 0;
+      `;
+      closeBtn.onmouseover = () => closeBtn.style.color = '#ff4444';
+      closeBtn.onmouseout = () => closeBtn.style.color = 'white';
+
+      modal.appendChild(img);
+      modal.appendChild(closeBtn);
+      document.body.appendChild(modal);
+
+      const closeModal = () => {
+        document.body.removeChild(modal);
+      };
+
+      modal.onclick = closeModal;
+      closeBtn.onclick = (e) => {
+        e.stopPropagation();
+        closeModal();
+      };
+    }
+
+    // Export rankings to CSV file
+    async function exportRankings() {
+      try {
+        const res = await fetch('/api/rankings?all=true');
+        const rankings = await res.json();
+
+        if (rankings.length === 0) {
+          alert('Nenhum ranking para exportar!');
+          return;
+        }
+
+        // CSV format with header
+        let content = 'Nome,Email,Pontuação,Data e Hora\n';
+
+        rankings.forEach((rank) => {
+          const name = (rank.name || '').replace(/,/g, ' '); // Remove commas from name
+          const email = (rank.email || '').replace(/,/g, ' '); // Remove commas from email
+          const score = rank.score || 0;
+
+          // Get full timestamp with seconds
+          let timestamp = '';
+          if (rank.created_at) {
+            // Supabase timestamp
+            timestamp = new Date(rank.created_at).toLocaleString('pt-BR');
+          } else if (rank.date) {
+            // Fallback to date field
+            timestamp = rank.date;
+          }
+
+          content += `${name},${email},${score},${timestamp}\n`;
+        });
+
+        // Download as CSV file
+        const blob = new Blob([content], { type: 'text/csv;charset=utf-8' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `rankings_hacktudo_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('Error exporting rankings:', error);
+        alert('Erro ao exportar rankings: ' + error.message);
+      }
+    }
+
+    // Logout function
+    function logout() {
+      sessionStorage.removeItem('adminAuth');
+      window.location.href = '/admin-login';
+    }
 
     // Initialize
     loadPairs();

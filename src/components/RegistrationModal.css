@@ -1,0 +1,20 @@
+.score-text {
+  font-size: 1.3rem;
+  margin: 20px 0;
+}
+
+.score-text strong {
+  color: #f9bb37;
+  font-size: 1.5rem;
+}
+
+.instruction-text {
+  font-size: 1rem;
+  margin-bottom: 20px;
+  color: #ccc;
+}
+
+.glass-input {
+  width: 100%;
+  margin-bottom: 15px;
+}
