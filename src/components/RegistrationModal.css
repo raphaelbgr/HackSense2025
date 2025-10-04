@@ -1,20 +1,19 @@
+/* Modal uses styles from App.css (.modal-overlay, .modal, .glass-input, .modal-buttons, .glass-button) */
+
 .score-text {
   font-size: 1.3rem;
   margin: 20px 0;
+  color: white;
 }
 
 .score-text strong {
   color: #f9bb37;
   font-size: 1.5rem;
+  font-weight: 700;
 }
 
 .instruction-text {
   font-size: 1rem;
   margin-bottom: 20px;
-  color: #ccc;
-}
-
-.glass-input {
-  width: 100%;
-  margin-bottom: 15px;
+  color: rgba(255, 255, 255, 0.8);
 }

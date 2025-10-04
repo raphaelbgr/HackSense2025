@@ -14,7 +14,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Imagem inválida' });
     }
 
-    const correct = selected.type === 'human';
+    const correct = selected.type === 'ai';
     const points = correct ? 10 : 0;
 
     res.json({

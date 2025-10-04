@@ -71,7 +71,7 @@ function Game({ onGameEnd, onBackToHome }) {
       const newScore = score + (result.correct ? 10 : 0);
 
       if (result.correct) {
-        setFeedback('Acertou! 🎉');
+        setFeedback('ACERTOU');
         setScore(newScore);
 
         confetti({
@@ -80,7 +80,7 @@ function Game({ onGameEnd, onBackToHome }) {
           origin: { y: 0.6 }
         });
       } else {
-        setFeedback('Errou! 😢');
+        setFeedback('ERROU');
       }
 
       setTimeout(() => {
@@ -102,73 +102,79 @@ function Game({ onGameEnd, onBackToHome }) {
   }
 
   return (
-    <div className="game-view">
-      {/* Home Button */}
-      <button
-        className="home-btn glass-button"
-        onClick={onBackToHome}
-        title="Voltar para home"
-      >
-        🏠
-      </button>
+    <>
+      <div className="game-view">
+        {/* Header Bar */}
+        <header className="game-header">
+          {/* Left: Score Display */}
+          <div className="header-score">
+            <div className="score-label">ACERTOS</div>
+            <div className="score-value">{score.toString().padStart(2, '0')}</div>
+          </div>
 
-      {/* Score Display */}
-      <div className="score-display glass">
-        <div className="score">Pontos: {score}</div>
-        <div className="round">Rodada: {round}/{maxQuestions}</div>
+          {/* Center: Game Title */}
+          <div className="header-title">
+            <h1>REAL OU I.A.?</h1>
+            <p>CLIQUE NA IMAGEM FEITA POR I.A.</p>
+          </div>
+
+          {/* Right: Round Counter */}
+          <div className="header-round">
+            <div className="round-label">IMAGEM</div>
+            <div className="round-value">{round.toString().padStart(2, '0')}/{maxQuestions.toString().padStart(2, '0')}</div>
+          </div>
+        </header>
+
+        {/* Main Game Area */}
+        <div className="game-container">
+          {loading && <div className="loading">Carregando...</div>}
+
+          {pair && !loading && (
+            <div className="image-pair">
+              <div className={`image-card ${isAnimating ? 'disabled' : ''}`}>
+                <div className="image-wrapper">
+                  <img src={pair.imageA.url} alt="Imagem A" onClick={() => selectImage(pair.imageA.id)} />
+                  <button
+                    className="fullscreen-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setFullscreenImage(pair.imageA.url);
+                    }}
+                    title="Ver em tela cheia"
+                  >
+                    🔍
+                  </button>
+                </div>
+              </div>
+
+              <div className={`image-card ${isAnimating ? 'disabled' : ''}`}>
+                <div className="image-wrapper">
+                  <img src={pair.imageB.url} alt="Imagem B" onClick={() => selectImage(pair.imageB.id)} />
+                  <button
+                    className="fullscreen-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setFullscreenImage(pair.imageB.url);
+                    }}
+                    title="Ver em tela cheia"
+                  >
+                    🔍
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Feedback Overlay */}
+          {feedback && (
+            <div className={`feedback ${feedback === 'ACERTOU' ? 'success' : 'error'}`}>
+              {feedback}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Main Game Area */}
-      <div className="game-container">
-        {loading && <div className="loading">Carregando...</div>}
-
-        {pair && !loading && (
-          <div className="image-pair">
-            <div className={`image-card glass ${isAnimating ? 'disabled' : ''}`}>
-              <div className="image-wrapper">
-                <img src={pair.imageA.url} alt="Imagem A" onClick={() => selectImage(pair.imageA.id)} />
-                <button
-                  className="fullscreen-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setFullscreenImage(pair.imageA.url);
-                  }}
-                  title="Ver em tela cheia"
-                >
-                  🔍
-                </button>
-              </div>
-              <p className="instruction">Clique se for Humana</p>
-            </div>
-
-            <div className={`image-card glass ${isAnimating ? 'disabled' : ''}`}>
-              <div className="image-wrapper">
-                <img src={pair.imageB.url} alt="Imagem B" onClick={() => selectImage(pair.imageB.id)} />
-                <button
-                  className="fullscreen-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setFullscreenImage(pair.imageB.url);
-                  }}
-                  title="Ver em tela cheia"
-                >
-                  🔍
-                </button>
-              </div>
-              <p className="instruction">Clique se for Humana</p>
-            </div>
-          </div>
-        )}
-
-        {/* Feedback Overlay */}
-        {feedback && (
-          <div className={`feedback ${feedback.includes('Acertou') ? 'success' : 'error'}`}>
-            {feedback}
-          </div>
-        )}
-      </div>
-
-      {/* Fullscreen Image Modal */}
+      {/* Fullscreen Image Modal - Rendered outside game-view */}
       {fullscreenImage && (
         <div className="fullscreen-modal" onClick={() => setFullscreenImage(null)}>
           <button className="close-fullscreen" onClick={() => setFullscreenImage(null)}>
@@ -177,7 +183,7 @@ function Game({ onGameEnd, onBackToHome }) {
           <img src={fullscreenImage} alt="Imagem em tela cheia" />
         </div>
       )}
-    </div>
+    </>
   );
 }
 
