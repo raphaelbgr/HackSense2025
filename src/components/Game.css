@@ -267,3 +267,61 @@
   background: rgba(255, 255, 255, 0.3);
   transform: scale(1.1);
 }
+
+/* Mobile Responsive - Stack images vertically */
+@media (max-width: 768px) {
+  .image-pair {
+    flex-direction: column !important;
+  }
+  
+  .image-card {
+    flex: 1 1 50% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    height: 50% !important;
+    overflow: hidden !important;
+  }
+  
+  .image-card img {
+    width: 120% !important;
+    height: 120% !important;
+    object-fit: cover !important;
+    object-position: center !important;
+    transform: scale(1.2) !important;
+    transform-origin: center !important;
+  }
+  
+  .game-container {
+    height: calc(100vh - 120px) !important;
+  }
+  
+  /* Adjust header for mobile */
+  .game-header {
+    height: 100px !important;
+    padding: 0 15px !important;
+  }
+  
+  .game-container {
+    top: 100px !important;
+    height: calc(100vh - 100px) !important;
+  }
+  
+  .header-title h1 {
+    font-size: 1.8rem;
+  }
+  
+  .header-title p {
+    font-size: 0.7rem;
+  }
+  
+  .score-value,
+  .round-value {
+    font-size: 1.8rem;
+  }
+  
+  .score-label,
+  .round-label {
+    font-size: 0.5rem;
+  }
+}
