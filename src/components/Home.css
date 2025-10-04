@@ -6,6 +6,26 @@
   padding: 40px 20px;
   background: #000000;
   width: 100%;
+  position: relative;
+}
+
+/* Hidden Admin Button */
+.hidden-admin-btn {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  font-size: 1.2rem;
+  opacity: 0.05;
+  transition: opacity 0.3s ease;
+  cursor: pointer;
+  z-index: 1000;
+  text-decoration: none;
+  padding: 8px;
+  border-radius: 50%;
+}
+
+.hidden-admin-btn:hover {
+  opacity: 0.3;
 }
 
 .start-game-btn {

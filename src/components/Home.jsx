@@ -3,6 +3,15 @@ import './Home.css';
 function Home({ rankings, onStartGame }) {
   return (
     <div className="home-container">
+      {/* Hidden Admin Button */}
+      <a
+        href="/api/admin-login"
+        className="hidden-admin-btn"
+        aria-label="Admin"
+      >
+        ⚙️
+      </a>
+
       {/* Logo */}
       <div className="app-logo">
         <h1 style={{
