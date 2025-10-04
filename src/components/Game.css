@@ -12,6 +12,11 @@
   box-sizing: border-box !important;
 }
 
+/* Hide body scroll when game is active */
+body:has(.game-view) {
+  overflow: hidden !important;
+}
+
 /* Game Header */
 .game-header {
   position: fixed !important;

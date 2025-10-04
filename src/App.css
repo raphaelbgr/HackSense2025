@@ -20,7 +20,8 @@ body {
   background: #000000;
   min-height: 100vh;
   color: #ffffff;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   margin: 0;
   padding: 0;
 }
