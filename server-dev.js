@@ -11,6 +11,7 @@ import scoreHandler from './api/score.js';
 import adminPairsHandler from './api/admin/pairs.js';
 import adminUploadPairHandler from './api/admin/upload/pair.js';
 import adminImageDeleteHandler from './api/admin/image/[id].js';
+import gameDataHandler from './api/game-data.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,6 +37,7 @@ app.get('/api/pair', wrapHandler(pairHandler));
 app.post('/api/check', wrapHandler(checkHandler));
 app.get('/api/rankings', wrapHandler(rankingsHandler));
 app.post('/api/score', wrapHandler(scoreHandler));
+app.get('/api/game-data', wrapHandler(gameDataHandler)); // New optimized endpoint
 app.get('/api/admin/pairs', wrapHandler(adminPairsHandler));
 app.post('/api/admin/upload/pair', wrapHandler(adminUploadPairHandler));
 app.delete('/api/admin/image/:id', (req, res) => {

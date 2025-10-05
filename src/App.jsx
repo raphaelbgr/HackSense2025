@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import Home from './components/Home';
-import Game from './components/Game';
+import Game from './components/Game-optimized'; // Use optimized version
 import RegistrationModal from './components/RegistrationModal';
+import { scoreQueue } from './utils/scoreQueue';
 import './App.css';
 
 function App() {
@@ -34,26 +35,16 @@ function App() {
   }
 
   async function handleSubmitScore(name, email) {
-    try {
-      const res = await fetch('/api/score', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, score: finalScore })
-      });
+    // Add to queue immediately (background worker will handle sending)
+    scoreQueue.addScore(name, email, finalScore);
 
-      if (!res.ok) {
-        const error = await res.json();
-        alert('Erro ao salvar pontuação: ' + (error.error || 'Erro desconhecido'));
-        return false; // Return false on error - keep modal open
-      }
+    // Reload rankings (will show once score is successfully sent)
+    await loadRankings();
 
-      await loadRankings();
-      setView('home');
-      return true; // Return true on success
-    } catch (error) {
-      alert('Erro ao salvar pontuação: ' + error.message);
-      return false; // Return false on error - keep modal open
-    }
+    // Go to home immediately (don't wait for API)
+    setView('home');
+
+    return true; // Always return true - queue handles retries
   }
 
   function handleSkipRegistration() {

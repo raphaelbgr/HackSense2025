@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head><title>Test Score Queue</title></head>
+<body>
+  <h1>Score Queue Test</h1>
+  <button onclick="addTestScore()">Add Test Score (Offline)</button>
+  <button onclick="checkQueue()">Check Queue Status</button>
+  <button onclick="clearQueue()">Clear Queue</button>
+  <pre id="output"></pre>
+  
+  <script type="module">
+    import { scoreQueue } from '/src/utils/scoreQueue.js';
+    window.scoreQueue = scoreQueue;
+    
+    window.addTestScore = () => {
+      const id = scoreQueue.addScore('Test User', 'test@example.com', 100);
+      document.getElementById('output').textContent = 
+        `Added score with ID: ${id}\n` + JSON.stringify(scoreQueue.getStatus(), null, 2);
+    };
+    
+    window.checkQueue = () => {
+      document.getElementById('output').textContent = 
+        JSON.stringify(scoreQueue.getStatus(), null, 2);
+    };
+    
+    window.clearQueue = () => {
+      localStorage.removeItem('pending_scores');
+      document.getElementById('output').textContent = 'Queue cleared!';
+    };
+    
+    // Auto-check on load
+    window.checkQueue();
+  </script>
+</body>
+</html>
