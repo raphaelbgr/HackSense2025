@@ -4,14 +4,12 @@ import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
 
 // Import API handlers (same as production)
-import pairHandler from './api/pair.js';
-import checkHandler from './api/check.js';
 import rankingsHandler from './api/rankings.js';
 import scoreHandler from './api/score.js';
+import gameDataHandler from './api/game-data.js';
 import adminPairsHandler from './api/admin/pairs.js';
 import adminUploadPairHandler from './api/admin/upload/pair.js';
 import adminImageDeleteHandler from './api/admin/image/[id].js';
-import gameDataHandler from './api/game-data.js';
 import configHandler from './api/admin/config/index.js';
 import rankingEditHandler from './api/admin/ranking-edit/index.js';
 
@@ -35,11 +33,9 @@ const wrapHandler = (handler) => async (req, res) => {
 };
 
 // API Routes - use production handlers (public endpoints)
-app.get('/api/pair', wrapHandler(pairHandler));
-app.post('/api/check', wrapHandler(checkHandler));
 app.get('/api/rankings', wrapHandler(rankingsHandler));
 app.post('/api/score', wrapHandler(scoreHandler));
-app.get('/api/game-data', wrapHandler(gameDataHandler)); // New optimized endpoint
+app.get('/api/game-data', wrapHandler(gameDataHandler));
 
 // Basic auth middleware for admin
 const basicAuth = (req, res, next) => {
