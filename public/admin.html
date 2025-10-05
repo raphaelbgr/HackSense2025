@@ -241,9 +241,81 @@
       transform: translateX(-5px);
     }
 
+    .ranking-item {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      transition: all 0.3s ease;
+    }
+
+    .ranking-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .ranking-item.selected {
+      background: rgba(249, 187, 55, 0.2);
+      border: 1px solid rgba(249, 187, 55, 0.5);
+    }
+
+    .ranking-checkbox {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+
+    .ranking-info {
+      flex: 1;
+    }
+
+    .ranking-name {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: 5px;
+    }
+
+    .ranking-email {
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+
+    .ranking-score {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #f9bb37;
+      margin: 0 20px;
+    }
+
+    .ranking-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .edit-btn {
+      background: rgba(33, 150, 243, 0.8);
+      padding: 8px 16px;
+      font-size: 0.9rem;
+    }
+
+    .edit-btn:hover {
+      background: rgba(33, 150, 243, 1);
+    }
+
     @media (max-width: 768px) {
       .upload-section {
         grid-template-columns: 1fr;
+      }
+
+      .ranking-item {
+        flex-wrap: wrap;
+      }
+
+      .ranking-actions {
+        width: 100%;
+        justify-content: flex-end;
       }
     }
   </style>
@@ -263,6 +335,23 @@
 
     <h1>🔧 Painel Administrativo</h1>
 
+    <!-- Game Configuration -->
+    <div class="glass">
+      <h2>⚙️ Configuração do Jogo</h2>
+      <div class="config-section">
+        <label for="maxRounds">Número de Rodadas (1-50):</label>
+        <input type="number" id="maxRounds" min="1" max="50" value="10" placeholder="10">
+        <button onclick="saveConfig()" style="padding: 10px 20px;">
+          💾 Salvar Configuração
+        </button>
+      </div>
+      <p style="margin-top: 15px; opacity: 0.9;">
+        Total de pares cadastrados: <strong id="totalPairsCount">0</strong> |
+        Rodadas configuradas: <strong id="configuredRounds">10</strong>
+      </p>
+      <div id="configMessage" style="margin-top: 10px;"></div>
+    </div>
+
     <div class="glass" style="text-align: center; padding: 20px;">
       <h2>Total de Rodadas: <span id="totalRounds" style="color: #f9bb37;">0</span></h2>
       <p style="opacity: 0.9;">Cada par de imagens que você adicionar será uma rodada do jogo.</p>
@@ -270,43 +359,46 @@
 
     <!-- Upload Section -->
     <div class="glass">
-      <h2>📷 Adicionar Par de Imagens</h2>
+      <h2>📷 Adicionar Pares de Imagens</h2>
       <p style="margin-bottom: 20px; opacity: 0.9;">
-        Adicione 1 imagem IA e 1 imagem humana por vez. Cada par adicionado será uma rodada do jogo.
+        Adicione múltiplos pares de imagens. Cada par = 1 imagem IA + 1 imagem humana.
       </p>
 
       <div class="upload-section">
         <!-- AI Images -->
         <div class="upload-box">
-          <h3>🤖 Imagem IA</h3>
+          <h3>🤖 Imagens IA</h3>
           <div class="drop-zone" id="dropZoneAI" onclick="document.getElementById('fileInputAI').click()">
             <div class="drop-zone-icon">📤</div>
-            <p>Selecione 1 imagem gerada por IA</p>
-            <small>(JPG, PNG, GIF)</small>
+            <p>Selecione imagens geradas por IA</p>
+            <small>(JPG, PNG, GIF - múltiplas)</small>
           </div>
-          <input type="file" id="fileInputAI" accept="image/*" onchange="previewImage(this, 'ai')">
-          <div id="previewAI" style="margin-top: 10px; text-align: center;"></div>
+          <input type="file" id="fileInputAI" accept="image/*" multiple onchange="previewImages(this, 'ai')">
+          <div id="previewAI" style="margin-top: 10px;"></div>
         </div>
 
         <!-- Human Images -->
         <div class="upload-box">
-          <h3>👤 Imagem Humana</h3>
+          <h3>👤 Imagens Humanas</h3>
           <div class="drop-zone" id="dropZoneHuman" onclick="document.getElementById('fileInputHuman').click()">
             <div class="drop-zone-icon">📤</div>
-            <p>Selecione 1 imagem feita por humano</p>
-            <small>(JPG, PNG, GIF)</small>
+            <p>Selecione imagens feitas por humanos</p>
+            <small>(JPG, PNG, GIF - múltiplas)</small>
           </div>
-          <input type="file" id="fileInputHuman" accept="image/*" onchange="previewImage(this, 'human')">
-          <div id="previewHuman" style="margin-top: 10px; text-align: center;"></div>
+          <input type="file" id="fileInputHuman" accept="image/*" multiple onchange="previewImages(this, 'human')">
+          <div id="previewHuman" style="margin-top: 10px;"></div>
         </div>
       </div>
 
       <div style="text-align: center; margin-top: 30px;">
-        <button id="uploadBtn" onclick="uploadPair()" style="font-size: 1.3rem; padding: 15px 40px;">
-          ✅ Adicionar Este Par
+        <p style="margin-bottom: 15px; opacity: 0.9;">
+          <strong>ℹ️ Importante:</strong> Número de imagens IA deve ser igual ao número de imagens humanas.
+        </p>
+        <button id="uploadBtn" onclick="uploadPairs()" style="font-size: 1.3rem; padding: 15px 40px;">
+          ✅ Adicionar Pares
         </button>
-        <div id="uploadSuccess" class="success-message">Par adicionado com sucesso!</div>
-        <div id="uploadError" class="error-message">Erro: Selecione ambas as imagens!</div>
+        <div id="uploadSuccess" class="success-message">Pares adicionados com sucesso!</div>
+        <div id="uploadError" class="error-message"></div>
       </div>
     </div>
 
@@ -319,17 +411,26 @@
       <div id="pairsList" class="image-list"></div>
     </div>
 
-    <!-- Rankings Export -->
+    <!-- Rankings Management -->
     <div class="glass">
-      <h2>📊 Exportar Rankings</h2>
+      <h2>🏆 Gerenciar Rankings</h2>
       <p style="margin-bottom: 20px; opacity: 0.9;">
-        Baixe a lista de participantes com nome e e-mail.
+        Total de participantes: <strong id="rankingCount">0</strong>
       </p>
-      <div style="text-align: center;">
-        <button onclick="exportRankings()" style="font-size: 1.2rem; padding: 15px 40px;">
-          💾 Baixar Rankings (CSV)
+
+      <div style="margin-bottom: 15px; display: flex; gap: 10px; justify-content: space-between; align-items: center;">
+        <button onclick="selectAllRankings()" style="padding: 10px 20px;">
+          ☑️ Selecionar Todos
+        </button>
+        <button onclick="deleteSelectedRankings()" style="padding: 10px 20px; background: rgba(244, 67, 54, 0.3); border: 1px solid rgba(244, 67, 54, 0.5);">
+          🗑️ Deletar Selecionados
+        </button>
+        <button onclick="exportRankings()" style="padding: 10px 20px;">
+          💾 Exportar CSV
         </button>
       </div>
+
+      <div id="rankingsList" class="image-list" style="max-height: 500px;"></div>
     </div>
   </div>
 
@@ -344,7 +445,7 @@
     const originalFetch = window.fetch;
     window.fetch = function(url, options = {}) {
       const auth = sessionStorage.getItem('adminAuth');
-      if (auth && (url.includes('/api/admin') || url.includes('/api/rankings'))) {
+      if (auth && (url.includes('/api/admin') || url.includes('/api/rankings') || url.includes('/api/config') || url.includes('/api/ranking-edit'))) {
         options.headers = {
           ...options.headers,
           'Authorization': `Basic ${auth}`
@@ -353,46 +454,67 @@
       return originalFetch(url, options);
     };
 
-    let aiFile = null;
-    let humanFile = null;
+    let aiFiles = [];
+    let humanFiles = [];
 
-    // Preview selected image
-    function previewImage(input, type) {
-      if (input.files && input.files[0]) {
-        const file = input.files[0];
-        const reader = new FileReader();
+    // Preview selected images (multiple)
+    function previewImages(input, type) {
+      if (input.files && input.files.length > 0) {
+        const files = Array.from(input.files);
 
         if (type === 'ai') {
-          aiFile = file;
+          aiFiles = files;
         } else {
-          humanFile = file;
+          humanFiles = files;
         }
 
-        reader.onload = function(e) {
-          const previewDiv = document.getElementById('preview' + (type === 'ai' ? 'AI' : 'Human'));
-          previewDiv.innerHTML = `
-            <div style="position: relative; display: inline-block;">
-              <img src="${e.target.result}" style="max-width: 200px; max-height: 200px; object-fit: contain; border-radius: 10px; border: 2px solid rgba(255,255,255,0.3);">
-              <button onclick="removeImage('${type}')" style="position: absolute; top: -10px; right: -10px; background: #d94141; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; font-size: 1.2rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.3); line-height: 1; padding: 0; font-weight: bold;">×</button>
-            </div>
-            <p style="margin-top: 5px; font-size: 0.9rem;">${file.name}</p>
-          `;
-        };
+        const previewDiv = document.getElementById('preview' + (type === 'ai' ? 'AI' : 'Human'));
+        previewDiv.innerHTML = '';
 
-        reader.readAsDataURL(file);
+        // Add count display first
+        const countText = document.createElement('p');
+        countText.style.cssText = 'margin: 10px 0; font-weight: 600; color: #f9bb37;';
+        countText.textContent = `${files.length} imagem(ns) selecionada(s)`;
+        previewDiv.appendChild(countText);
+
+        // Container for thumbnails
+        const thumbContainer = document.createElement('div');
+        thumbContainer.style.cssText = 'display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;';
+        previewDiv.appendChild(thumbContainer);
+
+        files.forEach((file, index) => {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            const imgContainer = document.createElement('div');
+            imgContainer.style.cssText = 'position: relative; display: inline-block;';
+            imgContainer.innerHTML = `
+              <img src="${e.target.result}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid rgba(255,255,255,0.3); display: block;">
+              <button onclick="removeImageAt('${type}', ${index})" style="position: absolute; top: -8px; right: -8px; background: #d94141; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; font-size: 1rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.3); line-height: 1; padding: 0; font-weight: bold;">×</button>
+              <p style="margin: 5px 0 0; font-size: 0.75rem; text-align: center; color: white;">#${index + 1}</p>
+            `;
+            thumbContainer.appendChild(imgContainer);
+          };
+          reader.readAsDataURL(file);
+        });
       }
     }
 
-    // Remove selected image
-    function removeImage(type) {
+    // Remove selected image at index
+    function removeImageAt(type, index) {
       if (type === 'ai') {
-        aiFile = null;
-        document.getElementById('fileInputAI').value = '';
-        document.getElementById('previewAI').innerHTML = '';
+        aiFiles.splice(index, 1);
+        const input = document.getElementById('fileInputAI');
+        const dt = new DataTransfer();
+        aiFiles.forEach(f => dt.items.add(f));
+        input.files = dt.files;
+        previewImages(input, 'ai');
       } else {
-        humanFile = null;
-        document.getElementById('fileInputHuman').value = '';
-        document.getElementById('previewHuman').innerHTML = '';
+        humanFiles.splice(index, 1);
+        const input = document.getElementById('fileInputHuman');
+        const dt = new DataTransfer();
+        humanFiles.forEach(f => dt.items.add(f));
+        input.files = dt.files;
+        previewImages(input, 'human');
       }
     }
 
@@ -434,53 +556,71 @@
       });
     }
 
-    // Upload pair of images
-    async function uploadPair() {
-      if (!aiFile || !humanFile) {
+    // Upload multiple pairs of images
+    async function uploadPairs() {
+      // Validation: must have equal number of AI and human images
+      if (aiFiles.length === 0 || humanFiles.length === 0) {
+        document.getElementById('uploadError').textContent = 'Erro: Selecione pelo menos 1 imagem IA e 1 imagem humana!';
+        showMessage('uploadError');
+        return;
+      }
+
+      if (aiFiles.length !== humanFiles.length) {
+        document.getElementById('uploadError').textContent = `Erro: Você selecionou ${aiFiles.length} imagem(ns) IA e ${humanFiles.length} imagem(ns) humana(s). Os números devem ser iguais!`;
         showMessage('uploadError');
         return;
       }
 
       const uploadBtn = document.getElementById('uploadBtn');
       const originalText = uploadBtn.innerHTML;
+      const pairCount = aiFiles.length;
 
       try {
         // Show loading state
         uploadBtn.disabled = true;
-        uploadBtn.innerHTML = '⏳ Enviando...';
+        uploadBtn.innerHTML = `⏳ Enviando ${pairCount} par(es)...`;
         uploadBtn.style.opacity = '0.6';
         uploadBtn.style.cursor = 'not-allowed';
 
-        // Compress images before upload
-        const compressedAI = await compressImage(aiFile);
-        const compressedHuman = await compressImage(humanFile);
+        // Upload each pair sequentially
+        for (let i = 0; i < pairCount; i++) {
+          uploadBtn.innerHTML = `⏳ Enviando par ${i + 1}/${pairCount}...`;
 
-        const formData = new FormData();
-        formData.append('aiImage', compressedAI);
-        formData.append('humanImage', compressedHuman);
+          // Compress images before upload
+          const compressedAI = await compressImage(aiFiles[i]);
+          const compressedHuman = await compressImage(humanFiles[i]);
 
-        const res = await fetch('/api/admin/upload/pair', {
-          method: 'POST',
-          body: formData
-        });
+          const formData = new FormData();
+          formData.append('aiImage', compressedAI);
+          formData.append('humanImage', compressedHuman);
 
-        if (res.ok) {
-          showMessage('uploadSuccess');
-          // Reset
-          aiFile = null;
-          humanFile = null;
-          document.getElementById('fileInputAI').value = '';
-          document.getElementById('fileInputHuman').value = '';
-          document.getElementById('previewAI').innerHTML = '';
-          document.getElementById('previewHuman').innerHTML = '';
-          loadPairs();
-        } else {
-          const error = await res.json();
-          alert('Erro ao fazer upload: ' + (error.error || 'Erro desconhecido'));
+          const res = await fetch('/api/admin/upload/pair', {
+            method: 'POST',
+            body: formData
+          });
+
+          if (!res.ok) {
+            const error = await res.json();
+            throw new Error(`Par ${i + 1}: ${error.error || 'Erro desconhecido'}`);
+          }
         }
+
+        // Success - show message and reset
+        document.getElementById('uploadSuccess').textContent = `${pairCount} par(es) adicionado(s) com sucesso!`;
+        showMessage('uploadSuccess');
+
+        // Reset
+        aiFiles = [];
+        humanFiles = [];
+        document.getElementById('fileInputAI').value = '';
+        document.getElementById('fileInputHuman').value = '';
+        document.getElementById('previewAI').innerHTML = '';
+        document.getElementById('previewHuman').innerHTML = '';
+        loadPairs();
       } catch (error) {
         console.error('Upload error:', error);
-        alert('Erro ao fazer upload do par: ' + error.message);
+        document.getElementById('uploadError').textContent = 'Erro ao fazer upload: ' + error.message;
+        showMessage('uploadError');
       } finally {
         // Restore button state
         uploadBtn.disabled = false;
@@ -574,7 +714,7 @@
         zone.classList.remove('dragover');
         if (e.dataTransfer.files.length > 0) {
           input.files = e.dataTransfer.files;
-          previewImage(input, type);
+          previewImages(input, type);
         }
       });
     });
@@ -693,8 +833,231 @@
       window.location.href = '/admin-login';
     }
 
+    // Load game configuration
+    async function loadConfig() {
+      try {
+        const res = await fetch('/api/config');
+        const config = await res.json();
+        document.getElementById('maxRounds').value = config.maxRounds;
+        document.getElementById('configuredRounds').textContent = config.maxRounds;
+      } catch (error) {
+        console.error('Error loading config:', error);
+      }
+    }
+
+    // Save game configuration
+    async function saveConfig() {
+      const maxRounds = parseInt(document.getElementById('maxRounds').value);
+
+      if (maxRounds < 1 || maxRounds > 50) {
+        showConfigMessage('Número de rodadas deve ser entre 1 e 50', 'error');
+        return;
+      }
+
+      try {
+        // Get current pair count
+        const pairsRes = await fetch('/api/admin/pairs');
+        const pairs = await pairsRes.json();
+        const pairCount = pairs.length;
+
+        // Validate: pairs >= rounds
+        if (pairCount < maxRounds) {
+          showConfigMessage(`Erro: Você tem ${pairCount} pares, mas configurou ${maxRounds} rodadas. Adicione mais ${maxRounds - pairCount} par(es) ou reduza o número de rodadas.`, 'error');
+          return;
+        }
+
+        const res = await fetch('/api/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ maxRounds })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          document.getElementById('configuredRounds').textContent = data.config.maxRounds;
+          showConfigMessage('Configuração salva com sucesso!', 'success');
+        } else {
+          const error = await res.json();
+          showConfigMessage(error.error || 'Erro ao salvar configuração', 'error');
+        }
+      } catch (error) {
+        showConfigMessage('Erro ao salvar configuração: ' + error.message, 'error');
+      }
+    }
+
+    // Show config message
+    function showConfigMessage(message, type) {
+      const el = document.getElementById('configMessage');
+      el.textContent = message;
+      el.style.padding = '10px';
+      el.style.borderRadius = '10px';
+      el.style.textAlign = 'center';
+      el.style.fontWeight = '600';
+      el.style.background = type === 'error' ? 'rgba(244, 67, 54, 0.8)' : 'rgba(76, 175, 80, 0.8)';
+      setTimeout(() => {
+        el.textContent = '';
+        el.style.padding = '0';
+      }, 5000);
+    }
+
+    // Load rankings list
+    async function loadRankings() {
+      try {
+        const res = await fetch('/api/rankings?all=true');
+        const rankings = await res.json();
+
+        document.getElementById('rankingCount').textContent = rankings.length;
+
+        const container = document.getElementById('rankingsList');
+        container.innerHTML = '';
+
+        if (rankings.length === 0) {
+          container.innerHTML = '<p style="text-align: center; color: rgba(255,255,255,0.6);">Nenhum participante ainda</p>';
+          return;
+        }
+
+        rankings.forEach((rank, index) => {
+          const div = document.createElement('div');
+          div.className = 'ranking-item';
+          div.dataset.id = rank.id;
+          div.innerHTML = `
+            <input type="checkbox" class="ranking-checkbox" onchange="toggleRankingSelection(this)">
+            <div class="ranking-info">
+              <div class="ranking-name">${rank.name || 'Sem nome'}</div>
+              <div class="ranking-email">${rank.email || 'Sem email'}</div>
+              <small style="opacity: 0.6;">ID: ${rank.id}</small>
+            </div>
+            <div class="ranking-score">${rank.score}</div>
+            <div class="ranking-actions">
+              <button class="edit-btn" onclick="editRanking('${rank.id}', '${(rank.name || '').replace(/'/g, "\\'")}', '${(rank.email || '').replace(/'/g, "\\'")}', ${rank.score})">
+                ✏️ Editar
+              </button>
+              <button class="delete-btn" onclick="deleteRanking('${rank.id}')">
+                🗑️ Deletar
+              </button>
+            </div>
+          `;
+          container.appendChild(div);
+        });
+      } catch (error) {
+        console.error('Error loading rankings:', error);
+      }
+    }
+
+    // Toggle ranking selection
+    function toggleRankingSelection(checkbox) {
+      const item = checkbox.closest('.ranking-item');
+      if (checkbox.checked) {
+        item.classList.add('selected');
+      } else {
+        item.classList.remove('selected');
+      }
+    }
+
+    // Select all rankings
+    function selectAllRankings() {
+      const checkboxes = document.querySelectorAll('.ranking-checkbox');
+      const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+
+      checkboxes.forEach(cb => {
+        cb.checked = !allChecked;
+        toggleRankingSelection(cb);
+      });
+    }
+
+    // Delete selected rankings
+    async function deleteSelectedRankings() {
+      const selected = document.querySelectorAll('.ranking-item.selected');
+
+      if (selected.length === 0) {
+        alert('Selecione pelo menos um participante para deletar');
+        return;
+      }
+
+      if (!confirm(`Tem certeza que deseja deletar ${selected.length} participante(s)?`)) {
+        return;
+      }
+
+      try {
+        for (const item of selected) {
+          const id = item.dataset.id;
+          await fetch(`/api/ranking-edit?id=${id}`, { method: 'DELETE' });
+        }
+        loadRankings();
+        alert(`${selected.length} participante(s) deletado(s) com sucesso!`);
+      } catch (error) {
+        alert('Erro ao deletar participantes: ' + error.message);
+      }
+    }
+
+    // Edit ranking
+    async function editRanking(id, currentName, currentEmail, currentScore) {
+      const name = prompt('Nome:', currentName);
+      if (name === null) return;
+
+      const email = prompt('Email:', currentEmail);
+      if (email === null) return;
+
+      const scoreStr = prompt('Pontuação:', currentScore);
+      if (scoreStr === null) return;
+
+      const score = parseInt(scoreStr);
+      if (isNaN(score) || score < 0) {
+        alert('Pontuação inválida');
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/ranking-edit?id=${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, score })
+        });
+
+        if (res.ok) {
+          loadRankings();
+          alert('Participante atualizado com sucesso!');
+        } else {
+          const error = await res.json();
+          alert('Erro: ' + (error.error || 'Erro desconhecido'));
+        }
+      } catch (error) {
+        alert('Erro ao editar participante: ' + error.message);
+      }
+    }
+
+    // Delete ranking
+    async function deleteRanking(id) {
+      if (!confirm('Tem certeza que deseja deletar este participante?')) return;
+
+      try {
+        const res = await fetch(`/api/ranking-edit?id=${id}`, { method: 'DELETE' });
+
+        if (res.ok) {
+          loadRankings();
+          alert('Participante deletado com sucesso!');
+        } else {
+          const error = await res.json();
+          alert('Erro: ' + (error.error || 'Erro desconhecido'));
+        }
+      } catch (error) {
+        alert('Erro ao deletar participante: ' + error.message);
+      }
+    }
+
+    // Override loadPairs to also update totalPairsCount
+    const originalLoadPairs = loadPairs;
+    loadPairs = async function() {
+      await originalLoadPairs();
+      const res = await fetch('/api/admin/pairs');
+      const pairs = await res.json();
+      document.getElementById('totalPairsCount').textContent = pairs.length;
+    };
+
     // Initialize
+    loadConfig();
     loadPairs();
+    loadRankings();
   </script>
 </body>
 </html>

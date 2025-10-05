@@ -12,6 +12,8 @@ import adminPairsHandler from './api/admin/pairs.js';
 import adminUploadPairHandler from './api/admin/upload/pair.js';
 import adminImageDeleteHandler from './api/admin/image/[id].js';
 import gameDataHandler from './api/game-data.js';
+import configHandler from './api/config.js';
+import rankingEditHandler from './api/ranking-edit.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -32,19 +34,12 @@ const wrapHandler = (handler) => async (req, res) => {
   }
 };
 
-// API Routes - use production handlers
+// API Routes - use production handlers (public endpoints)
 app.get('/api/pair', wrapHandler(pairHandler));
 app.post('/api/check', wrapHandler(checkHandler));
 app.get('/api/rankings', wrapHandler(rankingsHandler));
 app.post('/api/score', wrapHandler(scoreHandler));
 app.get('/api/game-data', wrapHandler(gameDataHandler)); // New optimized endpoint
-app.get('/api/admin/pairs', wrapHandler(adminPairsHandler));
-app.post('/api/admin/upload/pair', wrapHandler(adminUploadPairHandler));
-app.delete('/api/admin/image/:id', (req, res) => {
-  // Map Express params to Vercel format
-  req.query = { ...req.query, id: req.params.id };
-  wrapHandler(adminImageDeleteHandler)(req, res);
-});
 
 // Basic auth middleware for admin
 const basicAuth = (req, res, next) => {
@@ -79,6 +74,19 @@ app.get('/admin', (req, res) => {
 
 // Protect admin API routes
 app.use('/api/admin', basicAuth);
+
+// Admin-only API routes (must come after basicAuth middleware)
+app.get('/api/config', basicAuth, wrapHandler(configHandler));
+app.post('/api/config', basicAuth, wrapHandler(configHandler));
+app.put('/api/ranking-edit', basicAuth, wrapHandler(rankingEditHandler));
+app.delete('/api/ranking-edit', basicAuth, wrapHandler(rankingEditHandler));
+app.get('/api/admin/pairs', wrapHandler(adminPairsHandler));
+app.post('/api/admin/upload/pair', wrapHandler(adminUploadPairHandler));
+app.delete('/api/admin/image/:id', (req, res) => {
+  // Map Express params to Vercel format
+  req.query = { ...req.query, id: req.params.id };
+  wrapHandler(adminImageDeleteHandler)(req, res);
+});
 
 // Create Vite server in middleware mode
 const vite = await createViteServer({

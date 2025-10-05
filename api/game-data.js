@@ -1,6 +1,17 @@
 // API to download all game data (pairs with answers) at game start
 import { getImages } from '../supabase-direct.js';
 
+// Import config handler to get maxRounds setting
+let cachedConfig = { maxRounds: 10 };
+
+export function updateConfig(newConfig) {
+  cachedConfig = newConfig;
+}
+
+export function getConfig() {
+  return cachedConfig;
+}
+
 export default async function handler(req, res) {
   try {
     const images = await getImages();
@@ -43,10 +54,13 @@ export default async function handler(req, res) {
     // Shuffle pairs
     gamePairs.sort(() => Math.random() - 0.5);
 
+    // Get configured max rounds
+    const configuredMaxRounds = cachedConfig.maxRounds || 10;
+
     res.json({
       pairs: gamePairs,
       totalPairs: gamePairs.length,
-      maxRounds: Math.min(gamePairs.length, 10)
+      maxRounds: Math.min(gamePairs.length, configuredMaxRounds)
     });
   } catch (error) {
     console.error('Error loading game data:', error);
