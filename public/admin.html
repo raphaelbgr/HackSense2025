@@ -445,7 +445,7 @@
     const originalFetch = window.fetch;
     window.fetch = function(url, options = {}) {
       const auth = sessionStorage.getItem('adminAuth');
-      if (auth && (url.includes('/api/admin') || url.includes('/api/rankings') || url.includes('/api/config') || url.includes('/api/ranking-edit'))) {
+      if (auth && (url.includes('/api/admin') || url.includes('/api/rankings'))) {
         options.headers = {
           ...options.headers,
           'Authorization': `Basic ${auth}`
@@ -836,7 +836,7 @@
     // Load game configuration
     async function loadConfig() {
       try {
-        const res = await fetch('/api/config');
+        const res = await fetch('/api/admin/config');
         const config = await res.json();
         document.getElementById('maxRounds').value = config.maxRounds;
         document.getElementById('configuredRounds').textContent = config.maxRounds;
@@ -866,7 +866,7 @@
           return;
         }
 
-        const res = await fetch('/api/config', {
+        const res = await fetch('/api/admin/config', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ maxRounds })
@@ -981,7 +981,7 @@
       try {
         for (const item of selected) {
           const id = item.dataset.id;
-          await fetch(`/api/ranking-edit?id=${id}`, { method: 'DELETE' });
+          await fetch(`/api/admin/ranking-edit?id=${id}`, { method: 'DELETE' });
         }
         loadRankings();
         alert(`${selected.length} participante(s) deletado(s) com sucesso!`);
@@ -1008,7 +1008,7 @@
       }
 
       try {
-        const res = await fetch(`/api/ranking-edit?id=${id}`, {
+        const res = await fetch(`/api/admin/ranking-edit?id=${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, email, score })

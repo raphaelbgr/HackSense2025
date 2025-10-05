@@ -12,8 +12,8 @@ import adminPairsHandler from './api/admin/pairs.js';
 import adminUploadPairHandler from './api/admin/upload/pair.js';
 import adminImageDeleteHandler from './api/admin/image/[id].js';
 import gameDataHandler from './api/game-data.js';
-import configHandler from './api/config.js';
-import rankingEditHandler from './api/ranking-edit.js';
+import configHandler from './api/admin/config/index.js';
+import rankingEditHandler from './api/admin/ranking-edit/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -76,10 +76,10 @@ app.get('/admin', (req, res) => {
 app.use('/api/admin', basicAuth);
 
 // Admin-only API routes (must come after basicAuth middleware)
-app.get('/api/config', basicAuth, wrapHandler(configHandler));
-app.post('/api/config', basicAuth, wrapHandler(configHandler));
-app.put('/api/ranking-edit', basicAuth, wrapHandler(rankingEditHandler));
-app.delete('/api/ranking-edit', basicAuth, wrapHandler(rankingEditHandler));
+app.get('/api/admin/config', basicAuth, wrapHandler(configHandler));
+app.post('/api/admin/config', basicAuth, wrapHandler(configHandler));
+app.put('/api/admin/ranking-edit', basicAuth, wrapHandler(rankingEditHandler));
+app.delete('/api/admin/ranking-edit', basicAuth, wrapHandler(rankingEditHandler));
 app.get('/api/admin/pairs', wrapHandler(adminPairsHandler));
 app.post('/api/admin/upload/pair', wrapHandler(adminUploadPairHandler));
 app.delete('/api/admin/image/:id', (req, res) => {

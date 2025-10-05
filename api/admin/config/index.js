@@ -1,5 +1,5 @@
 // Game configuration API
-import { updateConfig as updateGameDataConfig } from './game-data.js';
+import { updateConfig as updateGameDataConfig } from '../../game-data.js';
 
 const CONFIG_KEY = 'game_config';
 
