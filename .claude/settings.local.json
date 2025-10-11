@@ -24,7 +24,8 @@
       "Bash(taskkill:*)",
       "Bash(curl:*)",
       "Bash(node:*)",
-      "Bash(git merge:*)"
+      "Bash(git merge:*)",
+      "Bash(test:*)"
     ],
     "deny": [],
     "ask": []
