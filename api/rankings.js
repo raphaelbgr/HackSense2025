@@ -11,14 +11,14 @@ export default async function handler(req, res) {
       const allRankings = await getRankings(); // No limit - get everything
       res.json(allRankings);
     } else {
-      // Public view - top 10 without emails
-      const rankings = await getRankings(10);
-      const top10 = rankings.map(r => ({
+      // Public view - all rankings without emails
+      const rankings = await getRankings(); // No limit - return all rankings
+      const publicRankings = rankings.map(r => ({
         name: r.name,
         score: r.score,
         date: r.date
       }));
-      res.json(top10);
+      res.json(publicRankings);
     }
   } catch (error) {
     console.error('Error loading rankings:', error);

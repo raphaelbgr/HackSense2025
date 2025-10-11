@@ -14,6 +14,14 @@ function App() {
 
   useEffect(() => {
     loadRankings();
+
+    // Auto-refresh rankings every 5 seconds
+    const intervalId = setInterval(() => {
+      loadRankings();
+    }, 5000);
+
+    // Cleanup interval on unmount
+    return () => clearInterval(intervalId);
   }, []);
 
   async function loadRankings() {
