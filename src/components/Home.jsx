@@ -1,6 +1,22 @@
+import { useEffect, useRef } from 'react';
 import './Home.css';
 
-function Home({ rankings, onStartGame }) {
+function Home({ rankings, onStartGame, highlightPlayerName }) {
+  const highlightedPlayerRef = useRef(null);
+
+  // Auto-scroll to highlighted player when rankings are loaded
+  useEffect(() => {
+    if (highlightPlayerName && highlightedPlayerRef.current) {
+      // Wait a bit for rendering to complete
+      setTimeout(() => {
+        highlightedPlayerRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }, 100);
+    }
+  }, [highlightPlayerName, rankings]);
+
   return (
     <div className="home-container">
       {/* Hidden Admin Button */}
@@ -55,15 +71,22 @@ function Home({ rankings, onStartGame }) {
       <div className="leaderboard glass">
         <h3>🏆 Ranking</h3>
         {rankings.length === 0 && <p className="empty">Seja o primeiro!</p>}
-        {rankings.map((r, i) => (
-          <div key={i} className="rank-item">
-            <span className="rank-number">
-              {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`}
-            </span>
-            <span className="rank-name">{r.name}</span>
-            <span className="rank-score">{r.score}</span>
-          </div>
-        ))}
+        {rankings.map((r, i) => {
+          const isHighlighted = highlightPlayerName && r.name === highlightPlayerName;
+          return (
+            <div
+              key={i}
+              ref={isHighlighted ? highlightedPlayerRef : null}
+              className={`rank-item ${isHighlighted ? 'highlighted' : ''}`}
+            >
+              <span className="rank-number">
+                {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`}
+              </span>
+              <span className="rank-name">{r.name}</span>
+              <span className="rank-score">{r.score}</span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

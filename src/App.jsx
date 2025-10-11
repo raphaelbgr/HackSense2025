@@ -10,6 +10,7 @@ function App() {
   const [view, setView] = useState('home'); // 'home' | 'game' | 'registration'
   const [finalScore, setFinalScore] = useState(0);
   const [rankings, setRankings] = useState([]);
+  const [highlightPlayerName, setHighlightPlayerName] = useState(null);
 
   useEffect(() => {
     loadRankings();
@@ -26,6 +27,7 @@ function App() {
   }
 
   function handleStartGame() {
+    setHighlightPlayerName(null); // Clear highlight when starting a new game
     setView('game');
   }
 
@@ -35,6 +37,9 @@ function App() {
   }
 
   async function handleSubmitScore(name, email) {
+    // Store the player name for highlighting
+    setHighlightPlayerName(name.trim());
+
     // Add to queue immediately (background worker will handle sending)
     scoreQueue.addScore(name, email, finalScore);
 
@@ -58,7 +63,11 @@ function App() {
   return (
     <div className="app">
       {view === 'home' && (
-        <Home rankings={rankings} onStartGame={handleStartGame} />
+        <Home
+          rankings={rankings}
+          onStartGame={handleStartGame}
+          highlightPlayerName={highlightPlayerName}
+        />
       )}
 
       {view === 'game' && (

@@ -226,6 +226,8 @@ body {
   width: 100%;
   max-width: 500px;
   padding: 30px;
+  max-height: none; /* Allow infinite growth */
+  overflow: visible; /* Ensure all content is visible */
 }
 
 .leaderboard h3 {
@@ -255,6 +257,23 @@ body {
 .rank-item:hover {
   background: rgba(255, 255, 255, 0.1);
   transform: translateX(5px);
+}
+
+.rank-item.highlighted {
+  background: linear-gradient(135deg, rgba(237, 117, 47, 0.3), rgba(249, 187, 55, 0.3));
+  border: 2px solid #ed752f;
+  box-shadow: 0 0 20px rgba(237, 117, 47, 0.5), 0 0 40px rgba(249, 187, 55, 0.3);
+  animation: highlightPulse 2s ease-in-out infinite;
+  transform: scale(1.02);
+}
+
+@keyframes highlightPulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(237, 117, 47, 0.5), 0 0 40px rgba(249, 187, 55, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(237, 117, 47, 0.7), 0 0 60px rgba(249, 187, 55, 0.5);
+  }
 }
 
 .rank-number {
