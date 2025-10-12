@@ -6,18 +6,22 @@ function RegistrationModal({ score, onSubmit, onSkip }) {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async () => {
+  const handleOk = async () => {
     if (isSubmitting) return; // Prevent double submission
 
+    // If no name provided, just skip to home
     if (!name.trim()) {
-      alert('Por favor, digite seu nome!');
+      onSkip();
       return;
     }
+
+    // Validate email if provided
     if (email.trim() && !email.includes('@')) {
       alert('Por favor, digite um e-mail válido!');
       return;
     }
 
+    // Submit the score with name and optional email
     setIsSubmitting(true);
     try {
       const success = await onSubmit(name.trim(), email.trim() || null);
@@ -33,7 +37,7 @@ function RegistrationModal({ score, onSubmit, onSkip }) {
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
-      handleSubmit();
+      handleOk();
     }
   };
 
@@ -69,17 +73,10 @@ function RegistrationModal({ score, onSubmit, onSkip }) {
         <div className="modal-buttons">
           <button
             className="glass-button"
-            onClick={handleSubmit}
+            onClick={handleOk}
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Enviando...' : 'Enviar'}
-          </button>
-          <button
-            className="glass-button secondary"
-            onClick={onSkip}
-            disabled={isSubmitting}
-          >
-            Pular
+            {isSubmitting ? 'Enviando...' : 'OK'}
           </button>
         </div>
       </div>
