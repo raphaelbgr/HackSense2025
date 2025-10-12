@@ -47,32 +47,44 @@ function Home({ rankings, onStartGame, highlightPlayerName, userScore }) {
 
   const { day1, day2 } = groupRankingsByDay(rankings);
 
-  // Calculate ranks with ties (same score = same rank)
+  // Calculate ranks with ties (same score = same rank, dense ranking)
   const calculateRanksWithTies = (dayRankings) => {
+    if (dayRankings.length === 0) return [];
+
+    // First pass: identify all tied groups
+    const scoreGroups = {};
+    dayRankings.forEach((player, i) => {
+      if (!scoreGroups[player.score]) {
+        scoreGroups[player.score] = [];
+      }
+      scoreGroups[player.score].push(i);
+    });
+
+    // Second pass: assign ranks with dense ranking and mark ties
     const rankedPlayers = [];
     let currentRank = 1;
+    let prevScore = null;
 
     for (let i = 0; i < dayRankings.length; i++) {
       const player = dayRankings[i];
+      const isTied = scoreGroups[player.score].length > 1;
+      const isFirstInGroup = i === 0 || player.score !== dayRankings[i - 1].score;
+      const isLastInGroup = i === dayRankings.length - 1 || player.score !== dayRankings[i + 1].score;
 
-      // Check if this player has the same score as the previous one
-      if (i > 0 && player.score === dayRankings[i - 1].score) {
-        // Same score as previous player, same rank
-        rankedPlayers.push({
-          ...player,
-          rank: rankedPlayers[i - 1].rank,
-          isTied: true
-        });
-      } else {
-        // Different score, new rank
-        rankedPlayers.push({
-          ...player,
-          rank: currentRank,
-          isTied: false
-        });
+      // Increment rank only when we encounter a new score
+      if (prevScore !== null && player.score !== prevScore) {
+        currentRank++;
       }
 
-      currentRank++;
+      rankedPlayers.push({
+        ...player,
+        rank: currentRank,
+        isTied: isTied,
+        isFirstInGroup: isFirstInGroup && isTied,
+        isLastInGroup: isLastInGroup && isTied
+      });
+
+      prevScore = player.score;
     }
 
     return rankedPlayers;
@@ -104,10 +116,17 @@ function Home({ rankings, onStartGame, highlightPlayerName, userScore }) {
               return rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
             };
 
+            let tiedClass = '';
+            if (player.isTied) {
+              if (player.isFirstInGroup) tiedClass = 'tied-rank tied-first';
+              else if (player.isLastInGroup) tiedClass = 'tied-rank tied-last';
+              else tiedClass = 'tied-rank tied-middle';
+            }
+
             return (
               <div
                 key={i}
-                className={`rank-item ${player.isTied ? 'tied-rank' : ''}`}
+                className={`rank-item ${tiedClass}`}
               >
                 <span className="rank-number">
                   {getRankDisplay(player.rank)}

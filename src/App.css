@@ -262,17 +262,49 @@ body {
 .rank-item.tied-rank {
   background: rgba(237, 117, 47, 0.08);
   position: relative;
+  margin-bottom: 3px;
 }
 
 .rank-item.tied-rank::before {
   content: '';
   position: absolute;
-  left: 0;
+  left: 8px;
   top: 0;
   bottom: 0;
-  width: 3px;
+  width: 4px;
   background: linear-gradient(180deg, rgba(237, 117, 47, 0.7), rgba(249, 187, 55, 0.7));
-  border-radius: 10px 0 0 10px;
+  border-radius: 2px;
+}
+
+.rank-item.tied-first {
+  margin-top: 8px;
+  border-radius: 10px 10px 3px 3px;
+  padding-left: 25px;
+}
+
+.rank-item.tied-first::before {
+  top: 50%;
+  border-radius: 2px 2px 0 0;
+}
+
+.rank-item.tied-middle {
+  border-radius: 3px;
+  padding-left: 25px;
+}
+
+.rank-item.tied-middle::before {
+  border-radius: 0;
+}
+
+.rank-item.tied-last {
+  margin-bottom: 15px;
+  border-radius: 3px 3px 10px 10px;
+  padding-left: 25px;
+}
+
+.rank-item.tied-last::before {
+  bottom: 50%;
+  border-radius: 0 0 2px 2px;
 }
 
 .rank-item.highlighted {
