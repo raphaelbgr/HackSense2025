@@ -10,6 +10,52 @@ function Home({ rankings, onStartGame, highlightPlayerName, userScore }) {
   const shouldShowUserCard = highlightPlayerName && userScore !== null;
   const displayRank = userRanking !== -1 ? userRanking : null;
 
+  // Group rankings by day
+  const groupRankingsByDay = (rankings) => {
+    const day1 = [];
+    const day2 = [];
+
+    rankings.forEach((ranking) => {
+      if (!ranking.date) return;
+
+      const date = new Date(ranking.date);
+      const day = date.getDate();
+
+      // Day 1: October 11, 2025
+      if (day === 11) {
+        day1.push(ranking);
+      }
+      // Day 2: October 12, 2025
+      else if (day === 12) {
+        day2.push(ranking);
+      }
+    });
+
+    return { day1, day2 };
+  };
+
+  const { day1, day2 } = groupRankingsByDay(rankings);
+
+  // Render a day's rankings
+  const renderDayRankings = (dayRankings, dayTitle) => {
+    if (dayRankings.length === 0) return null;
+
+    return (
+      <div className="leaderboard glass" style={{ marginBottom: '30px' }}>
+        <h3>🏆 {dayTitle}</h3>
+        {dayRankings.map((r, i) => (
+          <div key={i} className="rank-item">
+            <span className="rank-number">
+              {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`}
+            </span>
+            <span className="rank-name">{r.name}</span>
+            <span className="rank-score">{r.score}</span>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className="home-container">
       {/* Hidden Admin Button */}
@@ -74,20 +120,18 @@ function Home({ rankings, onStartGame, highlightPlayerName, userScore }) {
         </div>
       )}
 
-      {/* Leaderboard */}
-      <div className="leaderboard glass">
-        <h3>🏆 Ranking</h3>
-        {rankings.length === 0 && <p className="empty">Seja o primeiro!</p>}
-        {rankings.map((r, i) => (
-            <div key={i} className="rank-item">
-              <span className="rank-number">
-                {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`}
-              </span>
-              <span className="rank-name">{r.name}</span>
-              <span className="rank-score">{r.score}</span>
-            </div>
-          ))}
-      </div>
+      {/* Leaderboards by Day */}
+      {rankings.length === 0 ? (
+        <div className="leaderboard glass">
+          <h3>🏆 Ranking</h3>
+          <p className="empty">Seja o primeiro!</p>
+        </div>
+      ) : (
+        <>
+          {renderDayRankings(day2, 'Dia 2 - 12 de Outubro')}
+          {renderDayRankings(day1, 'Dia 1 - 11 de Outubro')}
+        </>
+      )}
     </div>
   );
 }
