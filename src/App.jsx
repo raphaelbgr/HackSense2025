@@ -14,16 +14,19 @@ function App() {
   const [userScore, setUserScore] = useState(null); // Store user's score to show immediately
 
   useEffect(() => {
-    loadRankings();
-
-    // Auto-refresh rankings every 5 seconds
-    const intervalId = setInterval(() => {
+    // Only load and refresh rankings when on home screen
+    if (view === 'home') {
       loadRankings();
-    }, 5000);
 
-    // Cleanup interval on unmount
-    return () => clearInterval(intervalId);
-  }, []);
+      // Auto-refresh rankings every 5 seconds while on home screen
+      const intervalId = setInterval(() => {
+        loadRankings();
+      }, 5000);
+
+      // Cleanup interval when leaving home screen or unmounting
+      return () => clearInterval(intervalId);
+    }
+  }, [view]);
 
   async function loadRankings() {
     try {
