@@ -298,6 +298,28 @@ body {
   box-shadow: 0 4px 12px rgba(249, 187, 55, 0.3);
 }
 
+/* User Rank Card - Shows user position after playing */
+.user-rank-card {
+  margin-bottom: 40px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(237, 117, 47, 0.3);
+  border-radius: 15px;
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+}
+
+.user-rank-highlight {
+  background: linear-gradient(135deg, rgba(237, 117, 47, 0.3), rgba(249, 187, 55, 0.3));
+  border: 2px solid #ed752f;
+  box-shadow: 0 0 20px rgba(237, 117, 47, 0.5), 0 0 40px rgba(249, 187, 55, 0.3);
+  animation: highlightPulse 2s ease-in-out infinite;
+  transform: scale(1.02);
+}
+
 /* Game Over Screen */
 .game-over {
   text-align: center;

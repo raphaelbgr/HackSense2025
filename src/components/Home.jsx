@@ -1,21 +1,11 @@
-import { useEffect, useRef } from 'react';
 import './Home.css';
 
 function Home({ rankings, onStartGame, highlightPlayerName }) {
-  const highlightedPlayerRef = useRef(null);
-
-  // Auto-scroll to highlighted player when rankings are loaded
-  useEffect(() => {
-    if (highlightPlayerName && highlightedPlayerRef.current) {
-      // Wait a bit for rendering to complete
-      setTimeout(() => {
-        highlightedPlayerRef.current?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center'
-        });
-      }, 100);
-    }
-  }, [highlightPlayerName, rankings]);
+  // Find user's ranking if highlighted
+  const userRanking = highlightPlayerName
+    ? rankings.findIndex(r => r.name === highlightPlayerName)
+    : -1;
+  const userRankData = userRanking !== -1 ? rankings[userRanking] : null;
 
   return (
     <div className="home-container">
@@ -67,26 +57,33 @@ function Home({ rankings, onStartGame, highlightPlayerName }) {
         Começar Jogo
       </button>
 
+      {/* User Position Card - Only shows after playing, not on page reload */}
+      {userRankData && (
+        <div className="user-rank-card">
+          <h4 style={{ marginBottom: '10px', color: '#ed752f', fontSize: '1.1rem' }}>Sua Posição</h4>
+          <div className="rank-item user-rank-highlight">
+            <span className="rank-number">
+              {userRanking === 0 ? '🥇' : userRanking === 1 ? '🥈' : userRanking === 2 ? '🥉' : `${userRanking + 1}.`}
+            </span>
+            <span className="rank-name">{userRankData.name}</span>
+            <span className="rank-score">{userRankData.score}</span>
+          </div>
+        </div>
+      )}
+
       {/* Leaderboard */}
       <div className="leaderboard glass">
         <h3>🏆 Ranking</h3>
         {rankings.length === 0 && <p className="empty">Seja o primeiro!</p>}
-        {rankings.map((r, i) => {
-          const isHighlighted = highlightPlayerName && r.name === highlightPlayerName;
-          return (
-            <div
-              key={i}
-              ref={isHighlighted ? highlightedPlayerRef : null}
-              className={`rank-item ${isHighlighted ? 'highlighted' : ''}`}
-            >
+        {rankings.map((r, i) => (
+            <div key={i} className="rank-item">
               <span className="rank-number">
                 {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`}
               </span>
               <span className="rank-name">{r.name}</span>
               <span className="rank-score">{r.score}</span>
             </div>
-          );
-        })}
+          ))}
       </div>
     </div>
   );
