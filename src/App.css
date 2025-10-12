@@ -259,6 +259,22 @@ body {
   transform: translateX(5px);
 }
 
+.rank-item.tied-rank {
+  background: rgba(237, 117, 47, 0.08);
+  position: relative;
+}
+
+.rank-item.tied-rank::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, rgba(237, 117, 47, 0.7), rgba(249, 187, 55, 0.7));
+  border-radius: 10px 0 0 10px;
+}
+
 .rank-item.highlighted {
   background: linear-gradient(135deg, rgba(237, 117, 47, 0.3), rgba(249, 187, 55, 0.3));
   border: 2px solid #ed752f;

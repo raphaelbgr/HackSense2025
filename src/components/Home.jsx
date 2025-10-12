@@ -47,33 +47,76 @@ function Home({ rankings, onStartGame, highlightPlayerName, userScore }) {
 
   const { day1, day2 } = groupRankingsByDay(rankings);
 
+  // Calculate ranks with ties (same score = same rank)
+  const calculateRanksWithTies = (dayRankings) => {
+    const rankedPlayers = [];
+    let currentRank = 1;
+
+    for (let i = 0; i < dayRankings.length; i++) {
+      const player = dayRankings[i];
+
+      // Check if this player has the same score as the previous one
+      if (i > 0 && player.score === dayRankings[i - 1].score) {
+        // Same score as previous player, same rank
+        rankedPlayers.push({
+          ...player,
+          rank: rankedPlayers[i - 1].rank,
+          isTied: true
+        });
+      } else {
+        // Different score, new rank
+        rankedPlayers.push({
+          ...player,
+          rank: currentRank,
+          isTied: false
+        });
+      }
+
+      currentRank++;
+    }
+
+    return rankedPlayers;
+  };
+
   // Find user's ranking position within the current day's rankings
   const currentDayRankings = currentDay === 11 ? day1 : day2;
-  const userRanking = highlightPlayerName
-    ? currentDayRankings.findIndex(r => r.name === highlightPlayerName)
-    : -1;
+  const rankedCurrentDay = calculateRanksWithTies(currentDayRankings);
+  const userRankData = highlightPlayerName
+    ? rankedCurrentDay.find(r => r.name === highlightPlayerName)
+    : null;
 
   // Show user card if we have userScore (immediate after playing)
   const shouldShowUserCard = highlightPlayerName && userScore !== null;
-  const displayRank = userRanking !== -1 ? userRanking : null;
+  const displayRank = userRankData ? userRankData.rank - 1 : null;
 
   // Render a day's rankings
   const renderDayRankings = (dayRankings, dayTitle) => {
+    const rankedPlayers = calculateRanksWithTies(dayRankings);
+
     return (
       <div className="leaderboard glass" style={{ flex: '1', minWidth: '300px' }}>
         <h3>🏆 {dayTitle}</h3>
         {dayRankings.length === 0 ? (
           <p className="empty">Nenhum jogador ainda</p>
         ) : (
-          dayRankings.map((r, i) => (
-            <div key={i} className="rank-item">
-              <span className="rank-number">
-                {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`}
-              </span>
-              <span className="rank-name">{r.name}</span>
-              <span className="rank-score">{r.score}</span>
-            </div>
-          ))
+          rankedPlayers.map((player, i) => {
+            const getRankDisplay = (rank) => {
+              return rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
+            };
+
+            return (
+              <div
+                key={i}
+                className={`rank-item ${player.isTied ? 'tied-rank' : ''}`}
+              >
+                <span className="rank-number">
+                  {getRankDisplay(player.rank)}
+                </span>
+                <span className="rank-name">{player.name}</span>
+                <span className="rank-score">{player.score}</span>
+              </div>
+            );
+          })
         )}
       </div>
     );
