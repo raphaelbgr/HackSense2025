@@ -1,14 +1,22 @@
 import './Home.css';
 
 function Home({ rankings, onStartGame, highlightPlayerName, userScore }) {
-  // Find user's ranking position if they're in the rankings
-  const userRanking = highlightPlayerName
-    ? rankings.findIndex(r => r.name === highlightPlayerName)
-    : -1;
+  // Determine current day (11 or 12)
+  const getCurrentDay = () => {
+    const now = new Date();
+    const day = now.getUTCDate();
+    const month = now.getUTCMonth() + 1;
+    const year = now.getUTCFullYear();
 
-  // Show user card if we have userScore (immediate after playing)
-  const shouldShowUserCard = highlightPlayerName && userScore !== null;
-  const displayRank = userRanking !== -1 ? userRanking : null;
+    // Check if we're on October 11 or 12, 2025
+    if (year === 2025 && month === 10 && (day === 11 || day === 12)) {
+      return day;
+    }
+    // Default to day 12 if outside the event dates
+    return 12;
+  };
+
+  const currentDay = getCurrentDay();
 
   // Group rankings by day
   const groupRankingsByDay = (rankings) => {
@@ -38,6 +46,16 @@ function Home({ rankings, onStartGame, highlightPlayerName, userScore }) {
   };
 
   const { day1, day2 } = groupRankingsByDay(rankings);
+
+  // Find user's ranking position within the current day's rankings
+  const currentDayRankings = currentDay === 11 ? day1 : day2;
+  const userRanking = highlightPlayerName
+    ? currentDayRankings.findIndex(r => r.name === highlightPlayerName)
+    : -1;
+
+  // Show user card if we have userScore (immediate after playing)
+  const shouldShowUserCard = highlightPlayerName && userScore !== null;
+  const displayRank = userRanking !== -1 ? userRanking : null;
 
   // Render a day's rankings
   const renderDayRankings = (dayRankings, dayTitle) => {
@@ -114,7 +132,9 @@ function Home({ rankings, onStartGame, highlightPlayerName, userScore }) {
       {/* User Position Card - Only shows after playing, not on page reload */}
       {shouldShowUserCard && (
         <div className="user-rank-card">
-          <h4 style={{ marginBottom: '10px', color: '#ed752f', fontSize: '1.1rem' }}>Sua Posição</h4>
+          <h4 style={{ marginBottom: '10px', color: '#ed752f', fontSize: '1.1rem' }}>
+            Sua Posição - Dia {currentDay === 11 ? '1' : '2'}
+          </h4>
           <div className="rank-item user-rank-highlight">
             <span className="rank-number">
               {displayRank === null ? '⏳' : displayRank === 0 ? '🥇' : displayRank === 1 ? '🥈' : displayRank === 2 ? '🥉' : `${displayRank + 1}.`}
