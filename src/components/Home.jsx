@@ -19,14 +19,17 @@ function Home({ rankings, onStartGame, highlightPlayerName, userScore }) {
       if (!ranking.date) return;
 
       const date = new Date(ranking.date);
-      const day = date.getDate();
+      // Get date in UTC to avoid timezone issues
+      const year = date.getUTCFullYear();
+      const month = date.getUTCMonth() + 1; // 0-indexed
+      const day = date.getUTCDate();
 
       // Day 1: October 11, 2025
-      if (day === 11) {
+      if (year === 2025 && month === 10 && day === 11) {
         day1.push(ranking);
       }
       // Day 2: October 12, 2025
-      else if (day === 12) {
+      else if (year === 2025 && month === 10 && day === 12) {
         day2.push(ranking);
       }
     });
@@ -38,20 +41,22 @@ function Home({ rankings, onStartGame, highlightPlayerName, userScore }) {
 
   // Render a day's rankings
   const renderDayRankings = (dayRankings, dayTitle) => {
-    if (dayRankings.length === 0) return null;
-
     return (
-      <div className="leaderboard glass" style={{ marginBottom: '30px' }}>
+      <div className="leaderboard glass" style={{ flex: '1', minWidth: '300px' }}>
         <h3>🏆 {dayTitle}</h3>
-        {dayRankings.map((r, i) => (
-          <div key={i} className="rank-item">
-            <span className="rank-number">
-              {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`}
-            </span>
-            <span className="rank-name">{r.name}</span>
-            <span className="rank-score">{r.score}</span>
-          </div>
-        ))}
+        {dayRankings.length === 0 ? (
+          <p className="empty">Nenhum jogador ainda</p>
+        ) : (
+          dayRankings.map((r, i) => (
+            <div key={i} className="rank-item">
+              <span className="rank-number">
+                {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`}
+              </span>
+              <span className="rank-name">{r.name}</span>
+              <span className="rank-score">{r.score}</span>
+            </div>
+          ))
+        )}
       </div>
     );
   };
@@ -127,10 +132,17 @@ function Home({ rankings, onStartGame, highlightPlayerName, userScore }) {
           <p className="empty">Seja o primeiro!</p>
         </div>
       ) : (
-        <>
-          {renderDayRankings(day2, 'Dia 2 - 12 de Outubro')}
+        <div style={{
+          display: 'flex',
+          gap: '30px',
+          width: '100%',
+          maxWidth: '1400px',
+          flexWrap: 'wrap',
+          justifyContent: 'center'
+        }}>
           {renderDayRankings(day1, 'Dia 1 - 11 de Outubro')}
-        </>
+          {renderDayRankings(day2, 'Dia 2 - 12 de Outubro')}
+        </div>
       )}
     </div>
   );
