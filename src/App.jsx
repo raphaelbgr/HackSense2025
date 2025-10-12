@@ -11,6 +11,7 @@ function App() {
   const [finalScore, setFinalScore] = useState(0);
   const [rankings, setRankings] = useState([]);
   const [highlightPlayerName, setHighlightPlayerName] = useState(null);
+  const [userScore, setUserScore] = useState(null); // Store user's score to show immediately
 
   useEffect(() => {
     loadRankings();
@@ -36,6 +37,7 @@ function App() {
 
   function handleStartGame() {
     setHighlightPlayerName(null); // Clear highlight when starting a new game
+    setUserScore(null); // Clear user score when starting a new game
     setView('game');
   }
 
@@ -45,16 +47,17 @@ function App() {
   }
 
   async function handleSubmitScore(name, email) {
-    // Store the player name for highlighting
+    // Store the player name and score for immediate display
     setHighlightPlayerName(name.trim());
+    setUserScore(finalScore);
 
     // Add to queue immediately (background worker will handle sending)
     scoreQueue.addScore(name, email, finalScore);
 
-    // Reload rankings (will show once score is successfully sent)
-    await loadRankings();
+    // Trigger background reload (don't wait for it)
+    loadRankings();
 
-    // Go to home immediately (don't wait for API)
+    // Go to home immediately with user's score
     setView('home');
 
     return true; // Always return true - queue handles retries
@@ -75,6 +78,7 @@ function App() {
           rankings={rankings}
           onStartGame={handleStartGame}
           highlightPlayerName={highlightPlayerName}
+          userScore={userScore}
         />
       )}
 

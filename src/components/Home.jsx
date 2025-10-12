@@ -1,11 +1,14 @@
 import './Home.css';
 
-function Home({ rankings, onStartGame, highlightPlayerName }) {
-  // Find user's ranking if highlighted
+function Home({ rankings, onStartGame, highlightPlayerName, userScore }) {
+  // Find user's ranking position if they're in the rankings
   const userRanking = highlightPlayerName
     ? rankings.findIndex(r => r.name === highlightPlayerName)
     : -1;
-  const userRankData = userRanking !== -1 ? rankings[userRanking] : null;
+
+  // Show user card if we have userScore (immediate after playing)
+  const shouldShowUserCard = highlightPlayerName && userScore !== null;
+  const displayRank = userRanking !== -1 ? userRanking : null;
 
   return (
     <div className="home-container">
@@ -58,15 +61,15 @@ function Home({ rankings, onStartGame, highlightPlayerName }) {
       </button>
 
       {/* User Position Card - Only shows after playing, not on page reload */}
-      {userRankData && (
+      {shouldShowUserCard && (
         <div className="user-rank-card">
           <h4 style={{ marginBottom: '10px', color: '#ed752f', fontSize: '1.1rem' }}>Sua Posição</h4>
           <div className="rank-item user-rank-highlight">
             <span className="rank-number">
-              {userRanking === 0 ? '🥇' : userRanking === 1 ? '🥈' : userRanking === 2 ? '🥉' : `${userRanking + 1}.`}
+              {displayRank === null ? '⏳' : displayRank === 0 ? '🥇' : displayRank === 1 ? '🥈' : displayRank === 2 ? '🥉' : `${displayRank + 1}.`}
             </span>
-            <span className="rank-name">{userRankData.name}</span>
-            <span className="rank-score">{userRankData.score}</span>
+            <span className="rank-name">{highlightPlayerName}</span>
+            <span className="rank-score">{userScore}</span>
           </div>
         </div>
       )}
