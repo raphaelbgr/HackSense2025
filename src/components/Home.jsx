@@ -160,8 +160,8 @@ function Home({ rankings, onStartGame, highlightPlayerName, userScore }) {
           flexWrap: 'wrap',
           justifyContent: 'center'
         }}>
-          {renderDayRankings(day1, 'Dia 1 - 11 de Outubro')}
-          {renderDayRankings(day2, 'Dia 2 - 12 de Outubro')}
+          {renderDayRankings(day1, 'Dia 1')}
+          {renderDayRankings(day2, 'Dia 2')}
         </div>
       )}
     </div>
