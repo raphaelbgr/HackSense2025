@@ -10,23 +10,10 @@ function App() {
   const [view, setView] = useState('home'); // 'home' | 'game' | 'registration'
   const [finalScore, setFinalScore] = useState(0);
   const [rankings, setRankings] = useState([]);
-  const [highlightPlayerName, setHighlightPlayerName] = useState(null);
-  const [userScore, setUserScore] = useState(null); // Store user's score to show immediately
 
   useEffect(() => {
-    // Only load and refresh rankings when on home screen
-    if (view === 'home') {
-      loadRankings();
-
-      // Auto-refresh rankings every 5 seconds while on home screen
-      const intervalId = setInterval(() => {
-        loadRankings();
-      }, 5000);
-
-      // Cleanup interval when leaving home screen or unmounting
-      return () => clearInterval(intervalId);
-    }
-  }, [view]);
+    loadRankings();
+  }, []);
 
   async function loadRankings() {
     try {
@@ -39,8 +26,6 @@ function App() {
   }
 
   function handleStartGame() {
-    setHighlightPlayerName(null); // Clear highlight when starting a new game
-    setUserScore(null); // Clear user score when starting a new game
     setView('game');
   }
 
@@ -50,17 +35,13 @@ function App() {
   }
 
   async function handleSubmitScore(name, email) {
-    // Store the player name and score for immediate display
-    setHighlightPlayerName(name.trim());
-    setUserScore(finalScore);
-
     // Add to queue immediately (background worker will handle sending)
     scoreQueue.addScore(name, email, finalScore);
 
-    // Trigger background reload (don't wait for it)
-    loadRankings();
+    // Reload rankings (will show once score is successfully sent)
+    await loadRankings();
 
-    // Go to home immediately with user's score
+    // Go to home immediately (don't wait for API)
     setView('home');
 
     return true; // Always return true - queue handles retries
@@ -77,12 +58,7 @@ function App() {
   return (
     <div className="app">
       {view === 'home' && (
-        <Home
-          rankings={rankings}
-          onStartGame={handleStartGame}
-          highlightPlayerName={highlightPlayerName}
-          userScore={userScore}
-        />
+        <Home rankings={rankings} onStartGame={handleStartGame} />
       )}
 
       {view === 'game' && (

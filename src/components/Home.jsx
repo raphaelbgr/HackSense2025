@@ -1,146 +1,6 @@
 import './Home.css';
 
-function Home({ rankings, onStartGame, highlightPlayerName, userScore }) {
-  // Determine current day (11 or 12)
-  const getCurrentDay = () => {
-    const now = new Date();
-    const day = now.getUTCDate();
-    const month = now.getUTCMonth() + 1;
-    const year = now.getUTCFullYear();
-
-    // Check if we're on October 11 or 12, 2025
-    if (year === 2025 && month === 10 && (day === 11 || day === 12)) {
-      return day;
-    }
-    // Default to day 12 if outside the event dates
-    return 12;
-  };
-
-  const currentDay = getCurrentDay();
-
-  // Group rankings by day
-  const groupRankingsByDay = (rankings) => {
-    const day1 = [];
-    const day2 = [];
-
-    rankings.forEach((ranking) => {
-      if (!ranking.date) return;
-
-      const date = new Date(ranking.date);
-      // Get date in UTC to avoid timezone issues
-      const year = date.getUTCFullYear();
-      const month = date.getUTCMonth() + 1; // 0-indexed
-      const day = date.getUTCDate();
-
-      // Day 1: October 11, 2025
-      if (year === 2025 && month === 10 && day === 11) {
-        day1.push(ranking);
-      }
-      // Day 2: October 12, 2025
-      else if (year === 2025 && month === 10 && day === 12) {
-        day2.push(ranking);
-      }
-    });
-
-    return { day1, day2 };
-  };
-
-  const { day1, day2 } = groupRankingsByDay(rankings);
-
-  // Calculate ranks with ties (same score = same rank, dense ranking)
-  const calculateRanksWithTies = (dayRankings) => {
-    if (dayRankings.length === 0) return [];
-
-    // First pass: identify all tied groups
-    const scoreGroups = {};
-    dayRankings.forEach((player, i) => {
-      if (!scoreGroups[player.score]) {
-        scoreGroups[player.score] = [];
-      }
-      scoreGroups[player.score].push(i);
-    });
-
-    // Second pass: assign ranks with dense ranking and mark ties
-    const rankedPlayers = [];
-    let currentRank = 1;
-    let prevScore = null;
-
-    for (let i = 0; i < dayRankings.length; i++) {
-      const player = dayRankings[i];
-      const isTied = scoreGroups[player.score].length > 1;
-      const isFirstInGroup = i === 0 || player.score !== dayRankings[i - 1].score;
-      const isLastInGroup = i === dayRankings.length - 1 || player.score !== dayRankings[i + 1].score;
-
-      // Increment rank only when we encounter a new score
-      if (prevScore !== null && player.score !== prevScore) {
-        currentRank++;
-      }
-
-      rankedPlayers.push({
-        ...player,
-        rank: currentRank,
-        isTied: isTied,
-        isFirstInGroup: isFirstInGroup && isTied,
-        isLastInGroup: isLastInGroup && isTied
-      });
-
-      prevScore = player.score;
-    }
-
-    return rankedPlayers;
-  };
-
-  // Find user's ranking position within the current day's rankings
-  const currentDayRankings = currentDay === 11 ? day1 : day2;
-  const rankedCurrentDay = calculateRanksWithTies(currentDayRankings);
-  const userRankData = highlightPlayerName
-    ? rankedCurrentDay.find(r => r.name === highlightPlayerName)
-    : null;
-
-  // Show user card if we have userScore (immediate after playing)
-  const shouldShowUserCard = highlightPlayerName && userScore !== null;
-  const displayRank = userRankData ? userRankData.rank - 1 : null;
-
-  // Render a day's rankings
-  const renderDayRankings = (dayRankings, dayTitle) => {
-    const rankedPlayers = calculateRanksWithTies(dayRankings);
-
-    return (
-      <div className="leaderboard glass" style={{ flex: '1', minWidth: '300px' }}>
-        <h3>🏆 {dayTitle}</h3>
-        {dayRankings.length === 0 ? (
-          <p className="empty">Nenhum jogador ainda</p>
-        ) : (
-          rankedPlayers.map((player, i) => {
-            const getRankDisplay = (rank) => {
-              return rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
-            };
-
-            let tiedClass = '';
-            if (player.isTied) {
-              if (player.isFirstInGroup) tiedClass = 'tied-rank tied-first';
-              else if (player.isLastInGroup) tiedClass = 'tied-rank tied-last';
-              else tiedClass = 'tied-rank tied-middle';
-            }
-
-            return (
-              <div
-                key={i}
-                className={`rank-item ${tiedClass}`}
-              >
-                <span className="rank-number">
-                  {getRankDisplay(player.rank)}
-                </span>
-                <span className="rank-name">{player.name}</span>
-                <span className="rank-score">{player.score}</span>
-              </div>
-            );
-          })
-        )}
-      </div>
-    );
-  };
-
+function Home({ rankings, onStartGame }) {
   return (
     <div className="home-container">
       {/* Hidden Admin Button */}
@@ -191,41 +51,20 @@ function Home({ rankings, onStartGame, highlightPlayerName, userScore }) {
         Começar Jogo
       </button>
 
-      {/* User Position Card - Only shows after playing, not on page reload */}
-      {shouldShowUserCard && (
-        <div className="user-rank-card">
-          <h4 style={{ marginBottom: '10px', color: '#ed752f', fontSize: '1.1rem' }}>
-            Sua Posição - Dia {currentDay === 11 ? '1' : '2'}
-          </h4>
-          <div className="rank-item user-rank-highlight">
+      {/* Leaderboard */}
+      <div className="leaderboard glass">
+        <h3>🏆 Ranking</h3>
+        {rankings.length === 0 && <p className="empty">Seja o primeiro!</p>}
+        {rankings.map((r, i) => (
+          <div key={i} className="rank-item">
             <span className="rank-number">
-              {displayRank === null ? '⏳' : displayRank === 0 ? '🥇' : displayRank === 1 ? '🥈' : displayRank === 2 ? '🥉' : `${displayRank + 1}.`}
+              {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`}
             </span>
-            <span className="rank-name">{highlightPlayerName}</span>
-            <span className="rank-score">{userScore}</span>
+            <span className="rank-name">{r.name}</span>
+            <span className="rank-score">{r.score}</span>
           </div>
-        </div>
-      )}
-
-      {/* Leaderboards by Day */}
-      {rankings.length === 0 ? (
-        <div className="leaderboard glass">
-          <h3>🏆 Ranking</h3>
-          <p className="empty">Seja o primeiro!</p>
-        </div>
-      ) : (
-        <div style={{
-          display: 'flex',
-          gap: '30px',
-          width: '100%',
-          maxWidth: '1400px',
-          flexWrap: 'wrap',
-          justifyContent: 'center'
-        }}>
-          {renderDayRankings(day1, 'Dia 1')}
-          {renderDayRankings(day2, 'Dia 2')}
-        </div>
-      )}
+        ))}
+      </div>
     </div>
   );
 }
