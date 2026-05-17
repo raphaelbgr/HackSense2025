@@ -1,6 +1,7 @@
 // Direct Supabase REST API calls (faster than SDK)
-const SUPABASE_URL = 'https://afmsegsxgvsqwdctasyl.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFmbXNlZ3N4Z3ZzcXdkY3Rhc3lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkyNzE0NDcsImV4cCI6MjA3NDg0NzQ0N30.kBSJi74iiKWZIhDOa1nMTYyKqNJOzykMu9dE8GXNVY0';
+// Configure via environment variables (see .env.example)
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://afmsegsxgvsqwdctasyl.supabase.co';
+const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY || '';
 
 const headers = {
   'apikey': SUPABASE_KEY,

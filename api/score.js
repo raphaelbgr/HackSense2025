@@ -12,7 +12,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Nome e pontuação são obrigatórios' });
     }
 
-    if (email && !email.includes('@')) {
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({ error: 'E-mail inválido' });
     }
 

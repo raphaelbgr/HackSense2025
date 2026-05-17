@@ -10,7 +10,10 @@ export default function middleware(req, res) {
   const credentials = Buffer.from(base64Credentials, 'base64').toString('utf-8');
   const [username, password] = credentials.split(':');
 
-  if (username === 'hacksense2025' && password === 'HackSense2025!') {
+  const expectedUser = process.env.ADMIN_USERNAME || 'hacksense2025';
+  const expectedPass = process.env.ADMIN_PASSWORD || 'HackSense2025!';
+
+  if (username === expectedUser && password === expectedPass) {
     return; // Continue to the actual handler
   } else {
     res.setHeader('WWW-Authenticate', 'Basic realm="Admin Area"');
