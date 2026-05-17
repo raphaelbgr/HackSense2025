@@ -50,18 +50,34 @@ cd HackSense2025
 # Instale as dependências
 npm install
 
+# Configure variáveis de ambiente
+cp .env.example .env
+# Edite .env com suas credenciais do Supabase
+
 # Inicie o servidor de desenvolvimento
 npm run dev
 
 # Acesse http://localhost:4111
 ```
 
+### Variáveis de Ambiente
+
+| Variável | Descrição | Padrão |
+|----------|-----------|--------|
+| `SUPABASE_URL` | URL do projeto Supabase | — (obrigatório) |
+| `SUPABASE_ANON_KEY` | Chave anon pública do Supabase | — (obrigatório) |
+| `ADMIN_USERNAME` | Usuário do painel admin | `hacksense2025` |
+| `ADMIN_PASSWORD` | Senha do painel admin | `HackSense2025!` |
+| `PORT` | Porta do servidor local | `4111` |
+
+Veja `.env.example` para o template completo.
+
 ---
 
 ## 🎮 Como Jogar
 
 1. **Compare as Imagens** - Duas imagens aparecem lado a lado
-2. **Clique na Humana** - Identifique qual foi criada por um humano
+2. **Clique na I.A.** - Identifique qual foi gerada por Inteligência Artificial
 3. **Ganhe Pontos** - +10 pontos por acerto ✅
 4. **Analise em Fullscreen** - Use o botão 🔍 para ampliar
 5. **Entre no Ranking** - Salve sua pontuação ao final
@@ -210,8 +226,6 @@ Contribuições são bem-vindas! Sinta-se à vontade para:
 ## 👥 Autores
 
 Desenvolvido com ❤️ para o **HackTudo 2025**
-
-🤖 *Generated with [Claude Code](https://claude.com/claude-code)*
 
 ---
 
